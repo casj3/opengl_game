@@ -1,0 +1,454 @@
+#include "LoadVAO.h"
+
+const aiScene* ImportScene(Assimp::Importer* importer, string path)
+{
+	// Read file via ASSIMP
+	const aiScene *scene = importer->ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
+
+	// Check for errors
+	assert(scene && !scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE && scene->mRootNode);
+
+	return scene;
+}
+
+vector<DefaultVertex> LoadVertices(aiMesh* mesh)
+{
+	vector<DefaultVertex> vertices;
+	vertices.resize(mesh->mNumVertices);
+
+	// Walk through each of the mesh's vertices
+	for (uint i = 0; i < mesh->mNumVertices; i++)
+	{
+		DefaultVertex vertex;
+		vec3 vector;
+
+		// Positions
+		vector.x = mesh->mVertices[i].x;
+		vector.y = mesh->mVertices[i].y;
+		vector.z = mesh->mVertices[i].z;
+		vertex.position = vector;
+
+		// Normals
+		vector.x = mesh->mNormals[i].x;
+		vector.y = mesh->mNormals[i].y;
+		vector.z = mesh->mNormals[i].z;
+		vertex.normal = vector;
+
+		// Texture Coordinates
+		if (mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
+		{
+			glm::vec2 vec;
+			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't
+			// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
+			vec.x = mesh->mTextureCoords[0][i].x;
+			vec.y = mesh->mTextureCoords[0][i].y;
+			vertex.tex_coords = vec;
+		}
+		else
+		{
+			vertex.tex_coords = glm::vec2(0.0f, 0.0f);
+		}
+
+		vertices[i] = vertex;
+	}
+	return vertices;
+}
+
+vector<uint> LoadIndices(aiMesh* mesh)
+{
+	vector<uint> indices;
+
+	// Now walk	through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
+	for (uint i = 0; i < mesh->mNumFaces; i++)
+	{
+		aiFace face = mesh->mFaces[i];
+		// Retrieve all indices of the face and store them in the indices vector
+		for (uint j = 0; j < face.mNumIndices; j++)
+		{
+			indices.push_back(face.mIndices[j]);
+		}
+	}
+
+	return indices;
+}
+
+// This function has to be adapted to the new structure of arrays - Textures
+Textures LoadTextures(aiMesh* mesh, const aiScene* scene, string path, Textures texturesLoaded)
+{
+	Textures textures;
+
+	string directory = path.substr(0, path.find_last_of('/'));
+
+	if (mesh->mMaterialIndex >= 0)
+	{
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+		Textures diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "diffuseSamp", directory, texturesLoaded);
+		textures.id.insert(textures.id.end(), diffuseMaps.id.begin(), diffuseMaps.id.end());
+		textures.path.insert(textures.path.end(), diffuseMaps.path.begin(), diffuseMaps.path.end());
+		textures.types.insert(textures.types.end(), diffuseMaps.types.begin(), diffuseMaps.types.end());
+
+		Textures specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "specularSamp", directory, texturesLoaded);
+		textures.id.insert(textures.id.end(), specularMaps.id.begin(), specularMaps.id.end());
+		textures.path.insert(textures.path.end(), specularMaps.path.begin(), specularMaps.path.end());
+		textures.types.insert(textures.types.end(), specularMaps.types.begin(), specularMaps.types.end());
+
+		Textures normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, "normalSamp", directory, texturesLoaded);
+		textures.id.insert(textures.id.end(), normalMaps.id.begin(), normalMaps.id.end());
+		textures.path.insert(normalMaps.path.end(), normalMaps.path.begin(), normalMaps.path.end());
+		textures.types.insert(normalMaps.types.end(), normalMaps.types.begin(), normalMaps.types.end());
+	}
+
+	return textures;
+}
+
+Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, string directory, Textures texturesLoaded)
+{
+	Textures textures;
+
+	for (uint i = 0; i < mat->GetTextureCount(type); i++)
+	{
+		aiString str;
+		mat->GetTexture(type, i, &str);
+
+		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
+		bool skip = false;
+
+		for (uint i = 0; i < texturesLoaded.id.size(); i++)
+		{
+			if (texturesLoaded.path[i] == str)
+			{
+				textures.id.push_back(texturesLoaded.id[i]);
+				textures.path.push_back(texturesLoaded.path[i]);
+				textures.types.push_back(texturesLoaded.types[i]);
+
+				// A texture with the same filepath has already been loaded, continue to next one. (optimization)
+				skip = true;
+
+				break;
+			}
+		}
+
+		if (!skip)
+		{
+			// If texture hasn't been loaded already, load it
+			textures.id.push_back(TextureFromFile(str.C_Str() + '/' + directory, directory));
+			textures.types.push_back(typeName);
+			textures.path.push_back(str);
+			// Store it as texture loaded for entire model, to ensure we won't unnecesery load duplicate textures.
+			texturesLoaded.id.push_back(TextureFromFile(str.C_Str() + '/' + directory, directory));
+			texturesLoaded.types.push_back(typeName);
+			texturesLoaded.path.push_back(str);
+		}
+	}
+	return textures;
+}
+
+uint TextureFromFile(string fileName, string directory)
+{
+	int width, height, numComponents;
+
+	unsigned char* imageData = stbi_load(fileName.c_str(), &width, &height, &numComponents, 4);
+
+	uint textureID;
+	glGenTextures(1, &textureID);
+
+	// Assign texture to ID
+	glBindTexture(GL_TEXTURE_2D, textureID);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, imageData);
+	glGenerateMipmap(GL_TEXTURE_2D);
+
+	// Parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glBindTexture(GL_TEXTURE_2D, 0);
+
+	stbi_image_free(imageData);
+
+	return textureID;
+}
+
+void DestroyTextures(Textures textures)
+{
+	for (uint i = 0; i < textures.id.size(); i++)
+	{
+		glDeleteTextures(1, &textures.id[i]);
+	}
+}
+
+vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, vector<vector<mat4>>* skeletonBoneFrames, const aiScene* scene)
+{
+	vector<SkeletalVertex> vertices;
+	vertices.resize(mesh->mNumVertices);
+
+	// Walk through each of the mesh's vertices
+	for (uint i = 0; i < mesh->mNumVertices; i++)
+	{
+		SkeletalVertex vertex;
+		vec3 vector;
+
+		// Positions
+		vector.x = mesh->mVertices[i].x;
+		vector.y = mesh->mVertices[i].y;
+		vector.z = mesh->mVertices[i].z;
+		vertex.position = vector;
+
+		// Normals
+		vector.x = mesh->mNormals[i].x;
+		vector.y = mesh->mNormals[i].y;
+		vector.z = mesh->mNormals[i].z;
+		vertex.normal = vector;
+
+		// Texture Coordinates
+		if (mesh->mTextureCoords[0]) // Does the mesh contain texture coordinates?
+		{
+			glm::vec2 vec;
+			// A vertex can contain up to 8 different texture coordinates. We thus make the assumption that we won't
+			// use models where a vertex can have multiple texture coordinates so we always take the first set (0).
+			vec.x = mesh->mTextureCoords[0][i].x;
+			vec.y = mesh->mTextureCoords[0][i].y;
+			vertex.tex_coords = vec;
+		}
+		else
+		{
+			vertex.tex_coords = glm::vec2(0.0f, 0.0f);
+		}
+
+		// The undefined values in the arrays in the skeletal vertex need to be zero in order for the assignment of values to work
+		memset(vertex.IDs, 0, sizeof(vertex.IDs));
+		memset(vertex.weights, 0, sizeof(vertex.weights));
+
+		vertices[i] = vertex;
+	}
+
+	// Now the bones
+	skeletonBoneFrames->resize(mesh->mNumBones);
+
+	// This whole system relies upon a total match between the amount of key frames and the time value within those key frames - an index to value correspondence
+	uint keyFrameSize = scene->mAnimations[0]->mChannels[0]->mNumPositionKeys - 1;
+
+	for (uint i = 0; i < mesh->mNumBones; i++)
+	{
+		string boneName(mesh->mBones[i]->mName.data);
+		mat4 boneOffset = aiMatrix4x4ToGlm(mesh->mBones[i]->mOffsetMatrix);
+
+		(*skeletonBoneFrames)[i] = ImportGlobalBones(boneName, keyFrameSize, scene->mRootNode, boneOffset, scene->mAnimations[0]);
+
+		for (uint j = 0; j < mesh->mBones[i]->mNumWeights; j++)
+		{
+			uint vertex_ID = mesh->mBones[i]->mWeights[j].mVertexId;
+			float weight = mesh->mBones[i]->mWeights[j].mWeight;
+
+			// This loops looks for a free slot to fill in the weight array of the concerned vertex
+			for (uint k = 0; k < sizeof(vertices[vertex_ID].IDs) / sizeof(vertices[vertex_ID].IDs[0]); k++)
+			{
+				// 0.0 implies a free slot
+				if (vertices[vertex_ID].weights[k] == 0.0)
+				{
+					vertices[vertex_ID].IDs[k] = i;
+					vertices[vertex_ID].weights[k] = weight;
+					break;
+				}
+			}
+		}
+	}
+
+	return vertices;
+}
+
+vector<mat4> ImportGlobalBones(string boneName, uint keyFramesSize, aiNode* root, mat4 offsetMatrix, aiAnimation* animation)
+{
+	vector<mat4> globalBones;
+
+	globalBones.resize(keyFramesSize);
+
+	for (uint i = 0; i < keyFramesSize; i++)
+	{
+		// aiMatrix4x4() creates an identity matrix
+		mat4 currentMatrix = aiMatrix4x4ToGlm(GetTransform(i, root, boneName, aiMatrix4x4(), animation)) * offsetMatrix;
+
+		globalBones[i] = currentMatrix;
+	}
+
+	return globalBones;
+}
+
+aiMatrix4x4 GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
+{
+	aiMatrix4x4 NodeTransformation;
+
+	string NodeName(root->mName.data);
+
+	// Making the assumption that only one animation exists within the scene - otherwise an animation index would be necessary as a parameter
+	//const aiAnimation* pAnimation = scene->mAnimations[0];
+
+	const aiNodeAnim* pNodeAnim = FindNodeAnim(animation, NodeName);
+
+	// A future error may reside in that if the keys for each aspect of the transform are multiple and differ
+	if (pNodeAnim)
+	{
+		// Interpolate scaling and generate scaling transformation
+		aiVector3D Scaling;
+		if (pNodeAnim->mNumScalingKeys == 1)
+		{
+			Scaling = pNodeAnim->mScalingKeys[0].mValue;
+		}
+		else // the amount is the total amount
+		{
+			Scaling = pNodeAnim->mScalingKeys[keyFrame].mValue;
+		}
+
+		// Interpolate rotation and generate rotation transformation matrix
+		aiQuaternion RotationQ;
+		if (pNodeAnim->mNumRotationKeys == 1)
+		{
+			RotationQ = pNodeAnim->mRotationKeys[0].mValue;
+		}
+		else // the amount is the total amount
+		{
+			RotationQ = pNodeAnim->mRotationKeys[keyFrame].mValue;
+		}
+
+		// Interpolate translation and generate translation transformation matrix (this is different because this assumes an exact correspondence)
+		aiVector3D Translation;
+		if (pNodeAnim->mNumPositionKeys == 1)
+		{
+			Translation = pNodeAnim->mPositionKeys[0].mValue;
+		}
+		else // the amount is the total amount
+		{
+			Translation = pNodeAnim->mPositionKeys[keyFrame].mValue;
+		}
+
+		NodeTransformation = aiMatrix4x4(Scaling, RotationQ, Translation);
+	}
+	else
+	{
+		NodeTransformation = root->mTransformation;
+	}
+
+	aiMatrix4x4 globalTransformation = parentTransform * NodeTransformation;
+
+	if (boneName == NodeName)
+	{
+		return globalTransformation;
+	}
+
+	aiMatrix4x4 result;
+
+	// Just a bullshit impossible matrix
+	aiMatrix4x4 DeadEnd = aiMatrix4x4(999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
+	for (uint i = 0; i < root->mNumChildren; i++)
+	{
+		result = GetTransform(keyFrame, root->mChildren[i], boneName, globalTransformation, animation);
+		if (result != DeadEnd)
+		{
+			return result;
+		}
+	}
+
+	// This is a dead end
+	return DeadEnd;
+}
+
+const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, string NodeName)
+{
+	for (uint i = 0; i < pAnimation->mNumChannels; i++)
+	{
+		aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
+
+		if (string(pNodeAnim->mNodeName.data) == NodeName)
+		{
+			return pNodeAnim;
+		}
+	}
+
+	return NULL;
+}
+
+uint FindRotation(uint AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+	for (uint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
+	{
+		if (AnimationTime < pNodeAnim->mRotationKeys[i + 1].mTime)
+		{
+			return i;
+		}
+	}
+
+  return 0;
+}
+
+uint FindScaling(uint AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+	for (uint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
+	{
+		if (AnimationTime < pNodeAnim->mScalingKeys[i + 1].mTime)
+		{
+			return i;
+		}
+	}
+
+  return 0;
+}
+
+uint FindPosition(uint AnimationTime, const aiNodeAnim* pNodeAnim)
+{
+	for (uint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
+	{
+		if (AnimationTime < pNodeAnim->mPositionKeys[i + 1].mTime)
+		{
+			return i;
+		}
+	}
+
+  return 0;
+}
+
+Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, string path)
+{
+	Textures textures;
+
+	string directory = path.substr(0, path.find_last_of('/'));
+
+	if (mesh->mMaterialIndex >= 0)
+	{
+		aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
+
+		Textures diffuseMaps = LoadMeshMaterialTextures(material, aiTextureType_DIFFUSE, "diffuseSamp", directory);
+		textures.id.insert(textures.id.end(), diffuseMaps.id.begin(), diffuseMaps.id.end());
+		textures.path.insert(textures.path.end(), diffuseMaps.path.begin(), diffuseMaps.path.end());
+		textures.types.insert(textures.types.end(), diffuseMaps.types.begin(), diffuseMaps.types.end());
+
+		Textures specularMaps = LoadMeshMaterialTextures(material, aiTextureType_SPECULAR, "specularSamp", directory);
+		textures.id.insert(textures.id.end(), specularMaps.id.begin(), specularMaps.id.end());
+		textures.path.insert(textures.path.end(), specularMaps.path.begin(), specularMaps.path.end());
+		textures.types.insert(textures.types.end(), specularMaps.types.begin(), specularMaps.types.end());
+
+		Textures normalMaps = LoadMeshMaterialTextures(material, aiTextureType_NORMALS, "normalSamp", directory);
+		textures.id.insert(textures.id.end(), normalMaps.id.begin(), normalMaps.id.end());
+		textures.path.insert(textures.path.end(), normalMaps.path.begin(), normalMaps.path.end());
+		textures.types.insert(textures.types.end(), normalMaps.types.begin(), normalMaps.types.end());
+	}
+
+	return textures;
+}
+
+Textures LoadMeshMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, string directory)
+{
+	Textures textures;
+
+	for (uint i = 0; i < mat->GetTextureCount(type); i++)
+	{
+		aiString str;
+		mat->GetTexture(type, i, &str);
+
+		textures.id.push_back(TextureFromFile(str.C_Str() + '/' + directory, directory));
+		textures.types.push_back(typeName);
+		textures.path.push_back(str);
+	}
+	return textures;
+}
