@@ -1,11 +1,17 @@
+// Text
+
 #include "Animation.h"
 
-// This method presupposes an exact correlation between animation keys and the indicies of the matrix vector within the vector
+// This method presupposes an exact correlation between animation keys and
+// the indicies of the matrix vector within the vector
 void SetAnimationBones(float animationTime, SkeletonSuper* animSuper)
 {
-	// The - 1 addition may not be necessary - unsure at the moment. The indices for the matrices specify the keyframes for each bone and the corresponding transforms.
+	// The - 1 addition may not be necessary - unsure at the moment. The indices for
+  // the matrices specify the keyframes for each bone and the corresponding transforms.
 	animationTime = fmod(animationTime, animSuper->key_bone_frames[0].size() - 1);
 
+  // Casting the animation time to an int to get rid of the decimals
+  // and thereby making it stand side by side with an animation key.
 	float keyFrameStart = (int)animationTime;
 	float keyFrameEnd = keyFrameStart + 1;
 

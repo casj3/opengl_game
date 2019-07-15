@@ -226,7 +226,8 @@ vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, vector<vector<mat4>>* 
 	// Now the bones
 	skeletonBoneFrames->resize(mesh->mNumBones);
 
-	// This whole system relies upon a total match between the amount of key frames and the time value within those key frames - an index to value correspondence
+	// This whole system relies upon a total match between the amount of key frames
+  // and the time value within those key frames - an index to value correspondence
 	uint keyFrameSize = scene->mAnimations[0]->mChannels[0]->mNumPositionKeys - 1;
 
 	for (uint i = 0; i < mesh->mNumBones; i++)
@@ -277,12 +278,13 @@ vector<mat4> ImportGlobalBones(string boneName, uint keyFramesSize, aiNode* root
 
 aiMatrix4x4 GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
 {
-	aiMatrix4x4 NodeTransformation;
+	aiMatrix4x4 nodeTransformation;
 
 	string NodeName(root->mName.data);
 
-	// Making the assumption that only one animation exists within the scene - otherwise an animation index would be necessary as a parameter
-	//const aiAnimation* pAnimation = scene->mAnimations[0];
+	// Making the assumption that only one animation exists within the scene -
+  // otherwise an animation index would be necessary as a parameter const
+  // aiAnimation* pAnimation = scene->mAnimations[0];
 
 	const aiNodeAnim* pNodeAnim = FindNodeAnim(animation, NodeName);
 
@@ -290,46 +292,46 @@ aiMatrix4x4 GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4
 	if (pNodeAnim)
 	{
 		// Interpolate scaling and generate scaling transformation
-		aiVector3D Scaling;
+		aiVector3D scaling;
 		if (pNodeAnim->mNumScalingKeys == 1)
 		{
-			Scaling = pNodeAnim->mScalingKeys[0].mValue;
+			scaling = pNodeAnim->mScalingKeys[0].mValue;
 		}
 		else // the amount is the total amount
 		{
-			Scaling = pNodeAnim->mScalingKeys[keyFrame].mValue;
+			scaling = pNodeAnim->mScalingKeys[keyFrame].mValue;
 		}
 
 		// Interpolate rotation and generate rotation transformation matrix
-		aiQuaternion RotationQ;
+		aiQuaternion rotationQ;
 		if (pNodeAnim->mNumRotationKeys == 1)
 		{
-			RotationQ = pNodeAnim->mRotationKeys[0].mValue;
+			rotationQ = pNodeAnim->mRotationKeys[0].mValue;
 		}
 		else // the amount is the total amount
 		{
-			RotationQ = pNodeAnim->mRotationKeys[keyFrame].mValue;
+			rotationQ = pNodeAnim->mRotationKeys[keyFrame].mValue;
 		}
 
 		// Interpolate translation and generate translation transformation matrix (this is different because this assumes an exact correspondence)
-		aiVector3D Translation;
+		aiVector3D translation;
 		if (pNodeAnim->mNumPositionKeys == 1)
 		{
-			Translation = pNodeAnim->mPositionKeys[0].mValue;
+			translation = pNodeAnim->mPositionKeys[0].mValue;
 		}
 		else // the amount is the total amount
 		{
-			Translation = pNodeAnim->mPositionKeys[keyFrame].mValue;
+			translation = pNodeAnim->mPositionKeys[keyFrame].mValue;
 		}
 
-		NodeTransformation = aiMatrix4x4(Scaling, RotationQ, Translation);
+		nodeTransformation = aiMatrix4x4(scaling, rotationQ, translation);
 	}
 	else
 	{
-		NodeTransformation = root->mTransformation;
+		nodeTransformation = root->mTransformation;
 	}
 
-	aiMatrix4x4 globalTransformation = parentTransform * NodeTransformation;
+	aiMatrix4x4 globalTransformation = parentTransform * nodeTransformation;
 
 	if (boneName == NodeName)
 	{
@@ -344,6 +346,8 @@ aiMatrix4x4 GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4
 	for (uint i = 0; i < root->mNumChildren; i++)
 	{
 		result = GetTransform(keyFrame, root->mChildren[i], boneName, globalTransformation, animation);
+    // TODO: Replace this solution - we shouldn't have to compare two entire 4x4.
+    // Make that which is the result currently to an out-parameter or something.
 		if (result != DeadEnd)
 		{
 			return result;

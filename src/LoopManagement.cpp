@@ -5,7 +5,8 @@ Input currentUpdate;
 Input lastUpdate;
 MouseWheel mouseWheel;
 
-void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* program, SkeletonSuper* skeletonSuper, UserSuper* user)
+void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* program,
+                      SkeletonSuper* skeletonSuper, UserSuper* user)
 {
 	// An importer to import ...
 	Assimp::Importer importer;
@@ -17,7 +18,8 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
 	vector<SkeletalVertex> skeletalVertices = LoadSkeletalVertices(scene->mMeshes[0], &skeletonSuper->key_bone_frames, scene);
 	vector<uint> indices = LoadIndices(scene->mMeshes[0]);
 
-	// At the moment I don't think I need to store the data of the VBO and EBO, which may turn out to be a grave error
+	// At the moment I don't think I need to store the data of the VBO and EBO,
+  // which may turn out to be a grave error
 	uint VAO, VBO, EBO;
 	SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletalVertices, indices);
 	Textures textures = LoadMeshTextures(scene->mMeshes[0], scene, avatarPath);
@@ -27,7 +29,8 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
 	// Now the size of the array
 	skeletonSuper->bone_amount = (sizeof(mat4)* skeletonSuper->key_bone_frames.size()) / sizeof(mat4);
 
-	// It's extremely important that these two push_back operations happen after each other, such that both vectors are parallel, matching
+	// It's extremely important that these two push_back operations
+  // happen after each other, such that both vectors are parallel, matching
 	skeletalDrawUnits->vertex_array_objects.push_back(VAO);
 	skeletalDrawUnits->textures.push_back(textures);
 	skeletalDrawUnits->indices_size.push_back(indices.size());
@@ -133,7 +136,10 @@ void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform use
 	UpdateCameraLightBuffer(vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
 }
 
-void SetUserGraphicsDataOrtho(ProgramSuper graphicsData, OrthoCamera camera, Transform userTransform, SkeletonSuper skeleton)
+void SetUserGraphicsDataOrtho(ProgramSuper graphicsData,
+                              OrthoCamera camera,
+                              Transform userTransform,
+                              SkeletonSuper skeleton)
 {
 	UpdateSkinningUniformsOrtho(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinningUniforms);
 
