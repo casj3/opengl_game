@@ -267,16 +267,17 @@ vector<mat4> ImportGlobalBones(string boneName, uint keyFramesSize, aiNode* root
 
 	for (uint i = 0; i < keyFramesSize; i++)
 	{
-		// aiMatrix4x4() creates an identity matrix
-		mat4 currentMatrix = aiMatrix4x4ToGlm(GetTransform(i, root, boneName, aiMatrix4x4(), animation)) * offsetMatrix;
+    aiMatrix4x4* globalBoneTransform = GetTransform(i, root, boneName, aiMatrix4x4(), animation);
+		// Copy the matrix to have the bones laid out sequentially in the vector
+		globalBones[i] = aiMatrix4x4ToGlm(*globalBoneTransform) * offsetMatrix;
 
-		globalBones[i] = currentMatrix;
+    free(globalBoneTransform);
 	}
 
 	return globalBones;
 }
 
-aiMatrix4x4 GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
+aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
 {
 	aiMatrix4x4 nodeTransformation;
 
@@ -331,31 +332,23 @@ aiMatrix4x4 GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4
 		nodeTransformation = root->mTransformation;
 	}
 
-	aiMatrix4x4 globalTransformation = parentTransform * nodeTransformation;
-
 	if (boneName == NodeName)
 	{
-		return globalTransformation;
+		return new aiMatrix4x4(parentTransform * nodeTransformation);
 	}
 
-	aiMatrix4x4 result;
-
-	// Just a bullshit impossible matrix
-	aiMatrix4x4 DeadEnd = aiMatrix4x4(999, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	aiMatrix4x4* result;
 
 	for (uint i = 0; i < root->mNumChildren; i++)
 	{
-		result = GetTransform(keyFrame, root->mChildren[i], boneName, globalTransformation, animation);
-    // TODO: Replace this solution - we shouldn't have to compare two entire 4x4.
-    // Make that which is the result currently to an out-parameter or something.
-		if (result != DeadEnd)
+		result = GetTransform(keyFrame, root->mChildren[i], boneName, parentTransform * nodeTransformation, animation);
+		if (result != nullptr)
 		{
 			return result;
 		}
 	}
 
-	// This is a dead end
-	return DeadEnd;
+	return nullptr;
 }
 
 const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, string NodeName)

@@ -26,7 +26,7 @@ void DestroyTextures(Textures texturesLoaded);
 
 vector<mat4> ImportGlobalBones(string boneName, uint keyFramesSize, aiNode* root, mat4 offsetMatrix, aiAnimation* animation);
 
-aiMatrix4x4 GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation);
+aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation);
 
 const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, string NodeName);
 
