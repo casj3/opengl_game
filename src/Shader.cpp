@@ -14,10 +14,6 @@ void CreateDefaultProgram(ShaderProgramFiles shaderNames, DefaultProgram* shader
 	glAttachShader(shaders->program, shaders->vertex_shader);
 	glAttachShader(shaders->program, shaders->fragment_shader);
 
-	glBindAttribLocation(shaders->program, 0, "position");
-	glBindAttribLocation(shaders->program, 1, "normal");
-	glBindAttribLocation(shaders->program, 2, "texCoord");
-
 	glLinkProgram(shaders->program);
 	CheckShaderError(shaders->program, GL_LINK_STATUS, true);
 
@@ -37,12 +33,6 @@ void CreateSkinningProgram(ShaderProgramFiles shaderNames, DefaultProgram* shade
 
 	glAttachShader(shaders->program, shaders->vertex_shader);
 	glAttachShader(shaders->program, shaders->fragment_shader);
-
-	glBindAttribLocation(shaders->program, 0, "position");
-	glBindAttribLocation(shaders->program, 1, "normal");
-	glBindAttribLocation(shaders->program, 2, "texCoord");
-	glBindAttribLocation(shaders->program, 3, "boneIDs");
-	glBindAttribLocation(shaders->program, 4, "weights");
 
 	glLinkProgram(shaders->program);
 	CheckShaderError(shaders->program, GL_LINK_STATUS, true);
