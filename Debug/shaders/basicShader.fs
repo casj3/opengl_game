@@ -40,5 +40,5 @@ void main()
 	vec4 diff = vec4(material.kd * max(0.0, dot(L, N)), 0.0f);
 	vec4 spec = vec4(material.ks * pow(max(0.0, dot(R, V)), material.shininess), 0.0f);
 
-	gl_FragColor = material.ka + diff + spec;
+	gl_FragColor = vec4(material.ka, 0.0f) + diff + spec;
 }
