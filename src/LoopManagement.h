@@ -4,9 +4,7 @@
 #include "Draw_VAO.h"
 #include "Shader.h"
 #include "LoadVAO.h"
-#include "VAO_Data.h"
 #include "Animation.h"
-#include "MathFunctions.h"
 
 void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* program, SkeletonSuper* skeletonSuper, UserSuper* user);
 
@@ -18,6 +16,6 @@ void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform use
 
 void SetUserGraphicsDataOrtho(ProgramSuper graphicsData, OrthoCamera camera, Transform userTransform, SkeletonSuper bones);
 
-void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, uint program);
+void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, unsigned int program);
 
 void SubInitializeUser(UserSuper* user);

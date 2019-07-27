@@ -4,7 +4,9 @@
 #include <string>
 
 #include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
+#include <assimp/scene.h>
+#include <assimp/matrix4x4.h>
+//#include <assimp/postprocess.h>
 #include "VAO_Data.h"
 
 // Everything we need is stored in the scene object - the retrieved data can be used as arguments for the other functions

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <SDL2/SDL.h>
-
 struct MouseWheel
 {
 	bool up = false;

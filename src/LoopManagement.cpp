@@ -1,5 +1,12 @@
 #include "LoopManagement.h"
 
+#include <vector>
+
+#include <glm/glm.hpp>
+
+#include "MathFunctions.h"
+#include "VAO_Data.h"
+
 // Global variables which are declared as extern in different header files
 Input currentUpdate;
 Input lastUpdate;
@@ -10,24 +17,25 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
 {
 	// An importer to import ...
 	Assimp::Importer importer;
-	string avatarPath = "./models/test.fbx";
+	std::string avatarPath = "./models/test.fbx";
 	// ... a scene
 	const aiScene* scene = ImportScene(&importer, avatarPath);
 
 	// All the vertices and indices to create a VAO
-	vector<SkeletalVertex> skeletalVertices = LoadSkeletalVertices(scene->mMeshes[0], &skeletonSuper->key_bone_frames, scene);
-	vector<uint> indices = LoadIndices(scene->mMeshes[0]);
+  std::vector<SkeletalVertex> skeletalVertices = LoadSkeletalVertices(scene->mMeshes[0], &skeletonSuper->key_bone_frames, scene);
+  std::vector<unsigned int> indices = LoadIndices(scene->mMeshes[0]);
 
 	// At the moment I don't think I need to store the data of the VBO and EBO,
   // which may turn out to be a grave error
-	uint VAO, VBO, EBO;
+	unsigned int VAO, VBO, EBO;
 	SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletalVertices, indices);
 	Textures textures = LoadMeshTextures(scene->mMeshes[0], scene, avatarPath);
 
 	// Allocate space for the skeleton whose data is sent to the GPU
-	skeletonSuper->animation_bone_transforms = (mat4*)malloc(sizeof(mat4) * skeletonSuper->key_bone_frames.size());
+	skeletonSuper->animation_bone_transforms =
+    (glm::mat4*)malloc(sizeof(glm::mat4) * skeletonSuper->key_bone_frames.size());
 	// Now the size of the array
-	skeletonSuper->bone_amount = (sizeof(mat4)* skeletonSuper->key_bone_frames.size()) / sizeof(mat4);
+	skeletonSuper->bone_amount = (sizeof(glm::mat4)* skeletonSuper->key_bone_frames.size()) / sizeof(glm::mat4);
 
 	// It's extremely important that these two push_back operations
   // happen after each other, such that both vectors are parallel, matching
@@ -53,8 +61,8 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
 
 void SubInitializeUser(UserSuper* user)
 {
-	user->user_transform.rot = vec3(degreesToRadians(-90), 0, 0);
-	user->user_transform.scale = vec3(100, 100, 100);
+	user->user_transform.rot = glm::vec3(degreesToRadians(-90), 0, 0);
+	user->user_transform.scale = glm::vec3(100, 100, 100);
 	user->user_transform.pos.z = 50;
 	user->user_transform.pos.x = -WIDTH/2;
 	user->user_transform.pos.y = HEIGHT / 2;
@@ -133,7 +141,7 @@ void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform use
 	UpdateSkinningUniforms(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinningUniforms);
 
 	// For now we will use an arbitrary value for the light
-	UpdateCameraLightBuffer(vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
+	UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
 }
 
 void SetUserGraphicsDataOrtho(ProgramSuper graphicsData,
@@ -144,10 +152,10 @@ void SetUserGraphicsDataOrtho(ProgramSuper graphicsData,
 	UpdateSkinningUniformsOrtho(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinningUniforms);
 
 	// For now we will use an arbitrary value for the light
-	UpdateCameraLightBuffer(vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
+	UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
 }
 
-void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, uint program)
+void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, unsigned int program)
 {
 	// We choose an arbitrary phong material for the avatar draw unit
 
@@ -162,7 +170,7 @@ void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, uint program)
 	// We draw the avatar without the texture to test the validity of the shaders. OBS! This function is clearly not
 	// finished for the sake of scalability.
 
-	for (uint i = 0; i < skeletalDrawUnits->vertex_array_objects.size(); i++)
+	for (unsigned int i = 0; i < skeletalDrawUnits->vertex_array_objects.size(); i++)
 	{
 		DrawPhongVAO(program, skeletalDrawUnits->vertex_array_objects[i], skeletalDrawUnits->indices_size[i], avatarPhong);
 	}

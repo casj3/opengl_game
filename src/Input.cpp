@@ -1,11 +1,6 @@
 #include "Input.h"
 
-
-
-
-
-
-
+#include <SDL2/SDL.h>
 
 void CheckInput(Input* currentUpdate, Input* lastUpdate, MouseWheel* mouseWheel)
 {

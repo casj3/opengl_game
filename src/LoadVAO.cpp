@@ -2,6 +2,7 @@
 
 #include <GL/glew.h>
 #include "LibraryTranslations.h"
+#include <assimp/postprocess.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
@@ -26,7 +27,7 @@ std::vector<DefaultVertex> LoadVertices(aiMesh* mesh)
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		DefaultVertex vertex;
-		vec3 vector;
+    glm::vec3 vector;
 
 		// Positions
 		vector.x = mesh->mVertices[i].x;
@@ -193,7 +194,7 @@ std::vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, std::vector<std::
 	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		SkeletalVertex vertex;
-		vec3 vector;
+    glm::vec3 vector;
 
 		// Positions
 		vector.x = mesh->mVertices[i].x;
@@ -283,7 +284,7 @@ std::vector<glm::mat4> ImportGlobalBones(std::string boneName, unsigned int keyF
 	return globalBones;
 }
 
-aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, std::string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
+aiMatrix4x4* GetTransform(unsigned int keyFrame, aiNode* root, std::string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
 {
 	aiMatrix4x4 nodeTransformation;
 

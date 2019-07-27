@@ -1,24 +1,21 @@
+#pragma once
+
 #include <string>
-#include <GL/glew.h>
-#include <glm/glm.hpp>
-#include <fstream>
 #include <vector>
+
+#include <glm/glm.hpp>
+
 #include "Animation.h"
 #include "Camera.h"
 
-//typedef unsigned int uint;
-
 #define MAX_BONES 25
-
-using namespace std;
-using namespace glm;
 
 struct DefaultProgram
 {
-	uint vertex_shader;
-	uint fragment_shader;
+	unsigned int vertex_shader;
+	unsigned int fragment_shader;
 
-	uint program;
+	unsigned int program;
 };
 
 // As soon there exists more program structures, this union becomes relevant
@@ -30,23 +27,23 @@ union Program
 
 struct ShaderProgramFiles
 {
-	string vertex_shader_file;
-	string fragment_shader_file;
+	std::string vertex_shader_file;
+	std::string fragment_shader_file;
 };
 
 struct DefaultUniforms
 {
-	uint world_matrix;
-	uint view_matrix;
-	uint perspective_matrix;
+	unsigned int world_matrix;
+	unsigned int view_matrix;
+	unsigned int perspective_matrix;
 };
 
 struct SkinningUniforms
 {
-	uint world_matrix;
-	uint view_matrix;
-	uint perspective_matrix;
-	uint bone_location[MAX_BONES];
+	unsigned int world_matrix;
+	unsigned int view_matrix;
+	unsigned int perspective_matrix;
+	unsigned int bone_location[MAX_BONES];
 };
 
 // A union only takes up space for its most recently assigned variable, which makes it very useful in the superstructure to come
@@ -66,13 +63,13 @@ struct ProgramSuper
 void CreateDefaultProgram(ShaderProgramFiles shaderNames, DefaultProgram* shaders, DefaultUniforms* uniforms);
 void CreateSkinningProgram(ShaderProgramFiles shaderNames, DefaultProgram* shaders, SkinningUniforms* uniforms);
 
-uint CreateShader(string text, GLenum shaderType);
-string LoadShader(string fileName);
-void Bind(uint program);
+unsigned int CreateShader(std::string text, unsigned int shaderType);
+std::string LoadShader(std::string fileName);
+void Bind(unsigned int program);
 void DestroyDefaultProgram(DefaultProgram program);
 
-void UpdateUniforms(mat4 world, mat4 view, mat4 perspective, DefaultUniforms uniforms);
-void UpdateSkinningUniforms(mat4 world, Camera camera, SkeletonSuper skeleton, SkinningUniforms uniforms);
-void UpdateSkinningUniformsOrtho(mat4 world, OrthoCamera camera, SkeletonSuper skeleton, SkinningUniforms uniforms);
-void UpdateWorldMatrix(mat4 world, uint world_matrix_uniform);
-void UpdateCameraLightBuffer(glm::vec3 lightPos, glm::vec3 cameraPos, uint program);
+void UpdateUniforms(glm::mat4 world, glm::mat4 view, glm::mat4 perspective, DefaultUniforms uniforms);
+void UpdateSkinningUniforms(glm::mat4 world, Camera camera, SkeletonSuper skeleton, SkinningUniforms uniforms);
+void UpdateSkinningUniformsOrtho(glm::mat4 world, OrthoCamera camera, SkeletonSuper skeleton, SkinningUniforms uniforms);
+void UpdateWorldMatrix(glm::mat4 world, unsigned int world_matrix_uniform);
+void UpdateCameraLightBuffer(glm::vec3 lightPos, glm::vec3 cameraPos, unsigned int program);

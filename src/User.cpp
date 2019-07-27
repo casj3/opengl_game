@@ -1,13 +1,13 @@
 #include "User.h"
 
-void IncrementRotation(vec3* direction, vec3* rotation, RotationIncrementers rot, float deltaTime)
+void IncrementRotation(glm::vec3* direction, glm::vec3* rotation, RotationIncrementers rot, float deltaTime)
 {
 	rotation->z += (rot.increment_left + rot.increment_right) * deltaTime;
 	direction->x = cosf(rotation->z);
 	direction->y = sinf(rotation->z);
 }
 
-void SetCameraPos(vec3* cameraPos, vec3 otherPos)
+void SetCameraPos(glm::vec3* cameraPos, glm::vec3 otherPos)
 {
 	cameraPos->x = otherPos.x;
 	cameraPos->y = otherPos.y;
@@ -44,15 +44,15 @@ void Animate(float deltaTime, float* animTimer, AnimationStateKeyFrames animStat
 	}
 }
 
-void Glide(float deltaTime, GlideVariables* glide, vec3 direction, vec3* pos)
+void Glide(float deltaTime, GlideVariables* glide, glm::vec3 direction, glm::vec3* pos)
 {
 	glide->glide_timer += deltaTime;
 
 	float speed = 25;
 	float deacceleration = 25;
 
-	vec3 velocity = vec3(direction.x * speed, direction.y * speed, 0);
-	vec3 deaccelerator = vec3(deacceleration * -direction.x * pow(glide->glide_timer, 2),
+	glm::vec3 velocity = glm::vec3(direction.x * speed, direction.y * speed, 0);
+	glm::vec3 deaccelerator = glm::vec3(deacceleration * -direction.x * pow(glide->glide_timer, 2),
 							  deacceleration * -direction.y * pow(glide->glide_timer, 2), 0);
 
 	if (length(velocity) < length(deaccelerator))

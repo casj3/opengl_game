@@ -1,8 +1,14 @@
 #define STB_IMAGE_IMPLEMENTATION
 
+#include <SDL2/SDL.h>
+
 #include "Display.h"
+#include "Camera.h"
+#include "Shader.h"
+#include "User.h"
+#include "Animation.h"
+#include "Input.h"
 #include "LoopManagement.h"
-#include "GeometricFigures.h"
 #include "enums.h"
 
 int main(int argc, char** argv)
@@ -32,9 +38,6 @@ int main(int argc, char** argv)
 	// This vector contains all skeletons and each skeleton consists of a set of bones which in turn posesses its transforms throughout time -
 	// each transform corresponding to a key in time and each key being represented by an index in the vector
 	SkeletonSuper skeletons[num_skeletons];
-
-	// The surfaces used in the game
-	//vector<Quad> surfaces;
 
 	// The starting state is set
 	State state = initializeScene1;
@@ -78,17 +81,17 @@ int main(int argc, char** argv)
 	DestroyDisplay();
 
 	// Destroy programs
-	for (uint i = 0; i < num_programs; i++)
+	for (unsigned int i = 0; i < num_programs; i++)
 	{
 		DestroyDefaultProgram(programs[i].program_type.defaultProgram);
 	}
 	// Destroy skeletons
-	for (uint i = 0; i < num_skeletons; i++)
+	for (unsigned int i = 0; i < num_skeletons; i++)
 	{
 		DestroySkeleton(skeletons[i].animation_bone_transforms);
 	}
 	// Iterate to destroy the draw units
-	for (uint i = 0; i < skeletalDrawUnits.vertex_array_objects.size(); i++)
+	for (unsigned int i = 0; i < skeletalDrawUnits.vertex_array_objects.size(); i++)
 	{
 		DestroyVAO(&skeletalDrawUnits.vertex_array_objects[i]);
 		DestroyTextures(skeletalDrawUnits.textures[i]);

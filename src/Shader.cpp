@@ -1,9 +1,14 @@
 #include "Shader.h"
-#include "assert.h"
+
 #include <Windows.h>
+#include <fstream>
+
+#include <GL/glew.h>
+#include <assert.h>
+
 #include "Camera.h"
 
-void CheckShaderError(uint shader, uint flag, bool isProgram);
+void CheckShaderError(unsigned int shader, unsigned int flag, bool isProgram);
 
 void CreateDefaultProgram(ShaderProgramFiles shaderNames, DefaultProgram* shaders, DefaultUniforms* uniforms)
 {
@@ -53,9 +58,9 @@ void CreateSkinningProgram(ShaderProgramFiles shaderNames, DefaultProgram* shade
 	}
 }
 
-uint CreateShader(string text, GLenum shaderType)
+unsigned int CreateShader(std::string text, unsigned int shaderType)
 {
-	uint shader = glCreateShader(shaderType);
+	unsigned int shader = glCreateShader(shaderType);
 
 	// Make sure there is a fucking shader
 	assert(shader != 0);
@@ -74,13 +79,13 @@ uint CreateShader(string text, GLenum shaderType)
 	return shader;
 }
 
-string LoadShader(string fileName)
+std::string LoadShader(std::string fileName)
 {
-	ifstream file;
+  std::ifstream file;
 	file.open((fileName).c_str());
 
-	string output;
-	string line;
+	std::string output;
+	std::string line;
 
 	assert(file.is_open());
 
@@ -94,7 +99,7 @@ string LoadShader(string fileName)
 }
 
 
-void CheckShaderError(uint shader, uint flag, bool isProgram)
+void CheckShaderError(unsigned int shader, unsigned int flag, bool isProgram)
 {
 	int success = 0;
 	char error[1024] = { 0 };
@@ -122,7 +127,7 @@ void CheckShaderError(uint shader, uint flag, bool isProgram)
 	}
 }
 
-void Bind(uint program)
+void Bind(unsigned int program)
 {
 	glUseProgram(program);
 }
@@ -138,7 +143,7 @@ void DestroyDefaultProgram(DefaultProgram program)
 	glDeleteProgram(program.program);
 }
 
-void UpdateUniforms(mat4 world, mat4 view, mat4 perspective, DefaultUniforms uniforms)
+void UpdateUniforms(glm::mat4 world, glm::mat4 view, glm::mat4 perspective, DefaultUniforms uniforms)
 {
 	glUniformMatrix4fv(uniforms.world_matrix, 1, GL_FALSE, &world[0][0]);
 	glUniformMatrix4fv(uniforms.view_matrix, 1, GL_FALSE, &view[0][0]);
@@ -147,38 +152,38 @@ void UpdateUniforms(mat4 world, mat4 view, mat4 perspective, DefaultUniforms uni
 
 
 // This method may have to be revised depending on how the value that the animation method returns
-void UpdateSkinningUniforms(mat4 world, Camera camera, SkeletonSuper skeleton, SkinningUniforms uniforms)
+void UpdateSkinningUniforms(glm::mat4 world, Camera camera, SkeletonSuper skeleton, SkinningUniforms uniforms)
 {
 	glUniformMatrix4fv(uniforms.world_matrix, 1, GL_FALSE, &world[0][0]);
 	glUniformMatrix4fv(uniforms.view_matrix, 1, GL_FALSE, &ViewMatrix(camera.view)[0][0]);
 	glUniformMatrix4fv(uniforms.perspective_matrix, 1, GL_FALSE, &ProjectionMatrix(camera.projection)[0][0]);
 
 	// It is important that the size of the bones doesn't supersede MAX_BONES
-	for (uint i = 0; i < skeleton.bone_amount; i++)
+	for (int i = 0; i < skeleton.bone_amount; i++)
 	{
 		glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.animation_bone_transforms[i][0][0]);
 	}
 }
 
-void UpdateSkinningUniformsOrtho(mat4 world, OrthoCamera camera, SkeletonSuper skeleton, SkinningUniforms uniforms)
+void UpdateSkinningUniformsOrtho(glm::mat4 world, OrthoCamera camera, SkeletonSuper skeleton, SkinningUniforms uniforms)
 {
 	glUniformMatrix4fv(uniforms.world_matrix, 1, GL_FALSE, &world[0][0]);
 	glUniformMatrix4fv(uniforms.view_matrix, 1, GL_FALSE, &ViewMatrix(camera.view)[0][0]);
 	glUniformMatrix4fv(uniforms.perspective_matrix, 1, GL_FALSE, &OrthoProjectionMatrix(camera.projection)[0][0]);
 
 	// It is important that the size of the bones doesn't supersede MAX_BONES
-	for (uint i = 0; i < skeleton.bone_amount; i++)
+	for (int i = 0; i < skeleton.bone_amount; i++)
 	{
 		glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.animation_bone_transforms[i][0][0]);
 	}
 }
 
-void UpdateWorldMatrix(mat4 world, uint world_matrix_uniform)
+void UpdateWorldMatrix(glm::mat4 world, unsigned int world_matrix_uniform)
 {
 	glUniformMatrix4fv(world_matrix_uniform, 1, GL_FALSE, &world[0][0]);
 }
 
-void UpdateCameraLightBuffer(glm::vec3 lightPos, glm::vec3 cameraPos, uint program)
+void UpdateCameraLightBuffer(glm::vec3 lightPos, glm::vec3 cameraPos, unsigned int program)
 {
 	float lightFloats[3] = { lightPos.x, lightPos.y, lightPos.z };
 	float cameraFloats[3] = { cameraPos.x, cameraPos.y, cameraPos.z };

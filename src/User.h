@@ -1,10 +1,10 @@
 #pragma once
 
+#include <glm/glm.hpp>
+
 #include "Input.h"
 #include "Camera.h"
 #include "Transform.h"
-
-using namespace glm;
 
 struct RotationIncrementers
 {
@@ -40,17 +40,17 @@ struct UserSuper
 	RotationIncrementers rotation_incrementers;
 	SlideProperties slide_props;
 	Transform user_transform;
-	vec3 direction;
+	glm::vec3 direction;
 	float animation_timer;
 };
 
-void IncrementRotation(vec3* direction, vec3* rotation, RotationIncrementers rot, float deltaTime);
+void IncrementRotation(glm::vec3* direction, glm::vec3* rotation, RotationIncrementers rot, float deltaTime);
 
-void SetCameraPos(vec3* cameraPos, vec3 otherPos);
+void SetCameraPos(glm::vec3* cameraPos, glm::vec3 otherPos);
 
 void Animate(float deltaTime, float* animTimer, AnimationStateKeyFrames animStates, StretchBooleans* stretch, GlideVariables* glide);
 
-void Glide(float deltaTime, GlideVariables* glide, vec3 direction, vec3* pos);
+void Glide(float deltaTime, GlideVariables* glide, glm::vec3 direction, glm::vec3* pos);
 
 // The calling layer above this function has to check whether mouse wheel input has been received or not to determine if this method should be called or not
 void CameraSlide(MouseWheel* wheel, View* view, SlideProperties* slideProperties, float deltaTime);
