@@ -1,6 +1,12 @@
 #include "LoadVAO.h"
 
-const aiScene* ImportScene(Assimp::Importer* importer, string path)
+#include <GL/glew.h>
+#include "LibraryTranslations.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
+const aiScene* ImportScene(Assimp::Importer* importer, std::string path)
 {
 	// Read file via ASSIMP
 	const aiScene *scene = importer->ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs);
@@ -11,13 +17,13 @@ const aiScene* ImportScene(Assimp::Importer* importer, string path)
 	return scene;
 }
 
-vector<DefaultVertex> LoadVertices(aiMesh* mesh)
+std::vector<DefaultVertex> LoadVertices(aiMesh* mesh)
 {
-	vector<DefaultVertex> vertices;
+	std::vector<DefaultVertex> vertices;
 	vertices.resize(mesh->mNumVertices);
 
 	// Walk through each of the mesh's vertices
-	for (uint i = 0; i < mesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		DefaultVertex vertex;
 		vec3 vector;
@@ -54,16 +60,16 @@ vector<DefaultVertex> LoadVertices(aiMesh* mesh)
 	return vertices;
 }
 
-vector<uint> LoadIndices(aiMesh* mesh)
+std::vector<unsigned int> LoadIndices(aiMesh* mesh)
 {
-	vector<uint> indices;
+	std::vector<unsigned int> indices;
 
 	// Now walk	through each of the mesh's faces (a face is a mesh its triangle) and retrieve the corresponding vertex indices.
-	for (uint i = 0; i < mesh->mNumFaces; i++)
+	for (unsigned int i = 0; i < mesh->mNumFaces; i++)
 	{
 		aiFace face = mesh->mFaces[i];
-		// Retrieve all indices of the face and store them in the indices vector
-		for (uint j = 0; j < face.mNumIndices; j++)
+		// Retrieve all indices of the face and store them in the indices std::vector
+		for (unsigned int j = 0; j < face.mNumIndices; j++)
 		{
 			indices.push_back(face.mIndices[j]);
 		}
@@ -73,11 +79,11 @@ vector<uint> LoadIndices(aiMesh* mesh)
 }
 
 // This function has to be adapted to the new structure of arrays - Textures
-Textures LoadTextures(aiMesh* mesh, const aiScene* scene, string path, Textures texturesLoaded)
+Textures LoadTextures(aiMesh* mesh, const aiScene* scene, std::string path, Textures texturesLoaded)
 {
 	Textures textures;
 
-	string directory = path.substr(0, path.find_last_of('/'));
+	std::string directory = path.substr(0, path.find_last_of('/'));
 
 	if (mesh->mMaterialIndex >= 0)
 	{
@@ -102,11 +108,11 @@ Textures LoadTextures(aiMesh* mesh, const aiScene* scene, string path, Textures 
 	return textures;
 }
 
-Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, string directory, Textures texturesLoaded)
+Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::string directory, Textures texturesLoaded)
 {
 	Textures textures;
 
-	for (uint i = 0; i < mat->GetTextureCount(type); i++)
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString str;
 		mat->GetTexture(type, i, &str);
@@ -114,7 +120,7 @@ Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeNa
 		// Check if texture was loaded before and if so, continue to next iteration: skip loading a new texture
 		bool skip = false;
 
-		for (uint i = 0; i < texturesLoaded.id.size(); i++)
+		for (unsigned int i = 0; i < texturesLoaded.id.size(); i++)
 		{
 			if (texturesLoaded.path[i] == str)
 			{
@@ -144,13 +150,13 @@ Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeNa
 	return textures;
 }
 
-uint TextureFromFile(string fileName, string directory)
+unsigned int TextureFromFile(std::string fileName, std::string directory)
 {
 	int width, height, numComponents;
 
 	unsigned char* imageData = stbi_load(fileName.c_str(), &width, &height, &numComponents, 4);
 
-	uint textureID;
+	unsigned int textureID;
 	glGenTextures(1, &textureID);
 
 	// Assign texture to ID
@@ -172,19 +178,19 @@ uint TextureFromFile(string fileName, string directory)
 
 void DestroyTextures(Textures textures)
 {
-	for (uint i = 0; i < textures.id.size(); i++)
+	for (unsigned int i = 0; i < textures.id.size(); i++)
 	{
 		glDeleteTextures(1, &textures.id[i]);
 	}
 }
 
-vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, vector<vector<mat4>>* skeletonBoneFrames, const aiScene* scene)
+std::vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, std::vector<std::vector<glm::mat4>>* skeletonBoneFrames, const aiScene* scene)
 {
-	vector<SkeletalVertex> vertices;
+	std::vector<SkeletalVertex> vertices;
 	vertices.resize(mesh->mNumVertices);
 
 	// Walk through each of the mesh's vertices
-	for (uint i = 0; i < mesh->mNumVertices; i++)
+	for (unsigned int i = 0; i < mesh->mNumVertices; i++)
 	{
 		SkeletalVertex vertex;
 		vec3 vector;
@@ -228,22 +234,22 @@ vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, vector<vector<mat4>>* 
 
 	// This whole system relies upon a total match between the amount of key frames
   // and the time value within those key frames - an index to value correspondence
-	uint keyFrameSize = scene->mAnimations[0]->mChannels[0]->mNumPositionKeys - 1;
+	unsigned int keyFrameSize = scene->mAnimations[0]->mChannels[0]->mNumPositionKeys - 1;
 
-	for (uint i = 0; i < mesh->mNumBones; i++)
+	for (unsigned int i = 0; i < mesh->mNumBones; i++)
 	{
-		string boneName(mesh->mBones[i]->mName.data);
-		mat4 boneOffset = aiMatrix4x4ToGlm(mesh->mBones[i]->mOffsetMatrix);
+		std::string boneName(mesh->mBones[i]->mName.data);
+		glm::mat4 boneOffset = aiMatrix4x4ToGlm(mesh->mBones[i]->mOffsetMatrix);
 
 		(*skeletonBoneFrames)[i] = ImportGlobalBones(boneName, keyFrameSize, scene->mRootNode, boneOffset, scene->mAnimations[0]);
 
-		for (uint j = 0; j < mesh->mBones[i]->mNumWeights; j++)
+		for (unsigned int j = 0; j < mesh->mBones[i]->mNumWeights; j++)
 		{
-			uint vertex_ID = mesh->mBones[i]->mWeights[j].mVertexId;
+			unsigned int vertex_ID = mesh->mBones[i]->mWeights[j].mVertexId;
 			float weight = mesh->mBones[i]->mWeights[j].mWeight;
 
 			// This loops looks for a free slot to fill in the weight array of the concerned vertex
-			for (uint k = 0; k < sizeof(vertices[vertex_ID].IDs) / sizeof(vertices[vertex_ID].IDs[0]); k++)
+			for (unsigned int k = 0; k < sizeof(vertices[vertex_ID].IDs) / sizeof(vertices[vertex_ID].IDs[0]); k++)
 			{
 				// 0.0 implies a free slot
 				if (vertices[vertex_ID].weights[k] == 0.0)
@@ -259,13 +265,13 @@ vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, vector<vector<mat4>>* 
 	return vertices;
 }
 
-vector<mat4> ImportGlobalBones(string boneName, uint keyFramesSize, aiNode* root, mat4 offsetMatrix, aiAnimation* animation)
+std::vector<glm::mat4> ImportGlobalBones(std::string boneName, unsigned int keyFramesSize, aiNode* root, glm::mat4 offsetMatrix, aiAnimation* animation)
 {
-	vector<mat4> globalBones;
+	std::vector<glm::mat4> globalBones;
 
 	globalBones.resize(keyFramesSize);
 
-	for (uint i = 0; i < keyFramesSize; i++)
+	for (unsigned int i = 0; i < keyFramesSize; i++)
 	{
     aiMatrix4x4* globalBoneTransform = GetTransform(i, root, boneName, aiMatrix4x4(), animation);
 		// Copy the matrix to have the bones laid out sequentially in the vector
@@ -277,11 +283,11 @@ vector<mat4> ImportGlobalBones(string boneName, uint keyFramesSize, aiNode* root
 	return globalBones;
 }
 
-aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
+aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, std::string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation)
 {
 	aiMatrix4x4 nodeTransformation;
 
-	string NodeName(root->mName.data);
+	std::string NodeName(root->mName.data);
 
 	// Making the assumption that only one animation exists within the scene -
   // otherwise an animation index would be necessary as a parameter const
@@ -339,7 +345,7 @@ aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix
 
 	aiMatrix4x4* result;
 
-	for (uint i = 0; i < root->mNumChildren; i++)
+	for (unsigned int i = 0; i < root->mNumChildren; i++)
 	{
 		result = GetTransform(keyFrame, root->mChildren[i], boneName, parentTransform * nodeTransformation, animation);
 		if (result != nullptr)
@@ -351,13 +357,13 @@ aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix
 	return nullptr;
 }
 
-const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, string NodeName)
+const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, std::string NodeName)
 {
-	for (uint i = 0; i < pAnimation->mNumChannels; i++)
+	for (unsigned int i = 0; i < pAnimation->mNumChannels; i++)
 	{
 		aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
 
-		if (string(pNodeAnim->mNodeName.data) == NodeName)
+		if (std::string(pNodeAnim->mNodeName.data) == NodeName)
 		{
 			return pNodeAnim;
 		}
@@ -366,9 +372,9 @@ const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, string NodeName)
 	return NULL;
 }
 
-uint FindRotation(uint AnimationTime, const aiNodeAnim* pNodeAnim)
+unsigned int FindRotation(unsigned int AnimationTime, const aiNodeAnim* pNodeAnim)
 {
-	for (uint i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
+	for (unsigned int i = 0; i < pNodeAnim->mNumRotationKeys - 1; i++)
 	{
 		if (AnimationTime < pNodeAnim->mRotationKeys[i + 1].mTime)
 		{
@@ -379,9 +385,9 @@ uint FindRotation(uint AnimationTime, const aiNodeAnim* pNodeAnim)
   return 0;
 }
 
-uint FindScaling(uint AnimationTime, const aiNodeAnim* pNodeAnim)
+unsigned int FindScaling(unsigned int AnimationTime, const aiNodeAnim* pNodeAnim)
 {
-	for (uint i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
+	for (unsigned int i = 0; i < pNodeAnim->mNumScalingKeys - 1; i++)
 	{
 		if (AnimationTime < pNodeAnim->mScalingKeys[i + 1].mTime)
 		{
@@ -392,9 +398,9 @@ uint FindScaling(uint AnimationTime, const aiNodeAnim* pNodeAnim)
   return 0;
 }
 
-uint FindPosition(uint AnimationTime, const aiNodeAnim* pNodeAnim)
+unsigned int FindPosition(unsigned int AnimationTime, const aiNodeAnim* pNodeAnim)
 {
-	for (uint i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
+	for (unsigned int i = 0; i < pNodeAnim->mNumPositionKeys - 1; i++)
 	{
 		if (AnimationTime < pNodeAnim->mPositionKeys[i + 1].mTime)
 		{
@@ -405,11 +411,11 @@ uint FindPosition(uint AnimationTime, const aiNodeAnim* pNodeAnim)
   return 0;
 }
 
-Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, string path)
+Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, std::string path)
 {
 	Textures textures;
 
-	string directory = path.substr(0, path.find_last_of('/'));
+	std::string directory = path.substr(0, path.find_last_of('/'));
 
 	if (mesh->mMaterialIndex >= 0)
 	{
@@ -434,11 +440,11 @@ Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, string path)
 	return textures;
 }
 
-Textures LoadMeshMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, string directory)
+Textures LoadMeshMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::string directory)
 {
 	Textures textures;
 
-	for (uint i = 0; i < mat->GetTextureCount(type); i++)
+	for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
 	{
 		aiString str;
 		mat->GetTexture(type, i, &str);

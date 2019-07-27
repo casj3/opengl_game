@@ -1,4 +1,7 @@
 #pragma once
+
+#include <glm/glm.hpp>
+
 #include "VAO_Data.h"
 #include "MathFunctions.h"
 
@@ -6,31 +9,31 @@ struct Quad
 {
 	DefaultVertex v0, v1, v2, v3;
 
-	uint indices[6];
+	unsigned int indices[6];
 };
 
 struct Polygon
 {
 	DefaultVertex v0, v1, v2;
 
-	uint indices[3];
+	unsigned int indices[3];
 };
 
 Quad CreateDefaultQuad()
 {
 	Quad quad;
 
-	quad.v0.position = vec3(0, 0, 0);
-	quad.v0.tex_coords = vec2(0, 0);
+	quad.v0.position = glm::vec3(0, 0, 0);
+	quad.v0.tex_coords = glm::vec2(0, 0);
 
-	quad.v1.position = vec3(0, 1, 0);
-	quad.v1.tex_coords = vec2(0, 1);
+	quad.v1.position = glm::vec3(0, 1, 0);
+	quad.v1.tex_coords = glm::vec2(0, 1);
 
-	quad.v2.position = vec3(1, 1, 0);
-	quad.v2.tex_coords = vec2(1, 1);
+	quad.v2.position = glm::vec3(1, 1, 0);
+	quad.v2.tex_coords = glm::vec2(1, 1);
 
-	quad.v3.position = vec3(1, 0, 0);
-	quad.v3.tex_coords = vec2(1, 0);
+	quad.v3.position = glm::vec3(1, 0, 0);
+	quad.v3.tex_coords = glm::vec2(1, 0);
 
 	ComputeNormalsQuad(&quad.v0, &quad.v1, &quad.v2, &quad.v3);
 
@@ -44,14 +47,14 @@ Polygon CreateDefaultPolygon()
 {
 	Polygon polygon;
 
-	polygon.v0.position = vec3(0, 0, 0);
-	polygon.v0.tex_coords = vec2(0, 0);
+	polygon.v0.position = glm::vec3(0, 0, 0);
+	polygon.v0.tex_coords = glm::vec2(0, 0);
 
-	polygon.v1.position = vec3(0.5f, 1, 0);
-	polygon.v1.tex_coords = vec2(0.5f, 1);
+	polygon.v1.position = glm::vec3(0.5f, 1, 0);
+	polygon.v1.tex_coords = glm::vec2(0.5f, 1);
 
-	polygon.v2.position = vec3(1, 0, 0);
-	polygon.v2.tex_coords = vec2(1, 0);
+	polygon.v2.position = glm::vec3(1, 0, 0);
+	polygon.v2.tex_coords = glm::vec2(1, 0);
 
 	ComputeNormalsPolygon(&polygon.v0, &polygon.v1, &polygon.v2);
 

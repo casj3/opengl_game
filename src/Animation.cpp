@@ -19,11 +19,11 @@ void SetAnimationBones(float animationTime, SkeletonSuper* animSuper)
 	float factor = (animationTime - keyFrameStart) / deltaTime;
 	assert(factor >= 0.0f && factor <= 1.0f);
 
-	for (uint i = 0; i < animSuper->key_bone_frames.size(); i++)
+	for (int i = 0; i < animSuper->key_bone_frames.size(); i++)
 	{
-		mat4 start = animSuper->key_bone_frames[i][keyFrameStart];
-		mat4 end = animSuper->key_bone_frames[i][keyFrameEnd];
-		mat4 current;
+		glm::mat4 start = animSuper->key_bone_frames[i][keyFrameStart];
+		glm::mat4 end = animSuper->key_bone_frames[i][keyFrameEnd];
+		glm::mat4 current;
 
 		// Interpolation for each element in the matrix
 		current[0][0] = start[0][0] + factor * (end[0][0] - start[0][0]);	current[0][1] = start[0][1] + factor * (end[0][1] - start[0][1]);
@@ -39,7 +39,7 @@ void SetAnimationBones(float animationTime, SkeletonSuper* animSuper)
 	}
 }
 
-void DestroySkeleton(mat4* animaitonBoneTransforms)
+void DestroySkeleton(glm::mat4* animaitonBoneTransforms)
 {
 	free(animaitonBoneTransforms);
 }

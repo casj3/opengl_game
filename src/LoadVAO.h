@@ -1,35 +1,34 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
-#include "stb_image.h"
 #include "VAO_Data.h"
-#include "LibraryTranslations.h"
-
-using namespace glm;
 
 // Everything we need is stored in the scene object - the retrieved data can be used as arguments for the other functions
-const aiScene* ImportScene(Assimp::Importer* importer, string path);
+const aiScene* ImportScene(Assimp::Importer* importer, std::string path);
 
-vector<DefaultVertex> LoadVertices(aiMesh* mesh);
-vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, vector<vector<mat4>>* boneKeys, const aiScene* scene);
-vector<uint> LoadIndices(aiMesh* mesh);
+std::vector<DefaultVertex> LoadVertices(aiMesh* mesh);
+std::vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, std::vector<std::vector<glm::mat4>>* boneKeys, const aiScene* scene);
+std::vector<unsigned int> LoadIndices(aiMesh* mesh);
 
-Textures LoadTextures(aiMesh* mesh, const aiScene* scene, string path, Textures texturesLoaded);
-Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, string directory, Textures texturesLoaded);
+Textures LoadTextures(aiMesh* mesh, const aiScene* scene, std::string path, Textures texturesLoaded);
+Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::string directory, Textures texturesLoaded);
 
-Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, string path);
-Textures LoadMeshMaterialTextures(aiMaterial *mat, aiTextureType type, string typeName, string directory);
+Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, std::string path);
+Textures LoadMeshMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::string directory);
 
-uint TextureFromFile(string fileName, string directory);
+unsigned int TextureFromFile(std::string fileName, std::string directory);
 void DestroyTextures(Textures texturesLoaded);
 
-vector<mat4> ImportGlobalBones(string boneName, uint keyFramesSize, aiNode* root, mat4 offsetMatrix, aiAnimation* animation);
+std::vector<glm::mat4> ImportGlobalBones(std::string boneName, unsigned int keyFramesSize, aiNode* root, glm::mat4 offsetMatrix, aiAnimation* animation);
 
-aiMatrix4x4* GetTransform(uint keyFrame, aiNode* root, string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation);
+aiMatrix4x4* GetTransform(unsigned int keyFrame, aiNode* root, std::string boneName, aiMatrix4x4 parentTransform, aiAnimation* animation);
 
-const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, string NodeName);
+const aiNodeAnim* FindNodeAnim(aiAnimation* pAnimation, std::string NodeName);
 
-uint FindPosition(uint AnimationTime, const aiNodeAnim* pNodeAnim);
-uint FindRotation(uint AnimationTime, const aiNodeAnim* pNodeAnim);
-uint FindScaling(uint AnimationTime, const aiNodeAnim* pNodeAnim);
+unsigned int FindPosition(unsigned int AnimationTime, const aiNodeAnim* pNodeAnim);
+unsigned int FindRotation(unsigned int AnimationTime, const aiNodeAnim* pNodeAnim);
+unsigned int FindScaling(unsigned int AnimationTime, const aiNodeAnim* pNodeAnim);

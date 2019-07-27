@@ -1,24 +1,22 @@
 #pragma once
 
-#include <GL/glew.h>
 #include <glm/glm.hpp>
 #include <assimp/scene.h>
+#include <assimp/types.h>
 #include <vector>
+#include <string>
 
 // These macros are only valid for a normal map skeletal vertex
-#define POSITION_LOCATION			0
-#define NORMAL_LOCATION				1
+#define POSITION_LOCATION			  0
+#define NORMAL_LOCATION				  1
 #define TEX_COORD_LOCATION			2
-#define BONE_ID_LOCATION			3
+#define BONE_ID_LOCATION			  3
 #define BONE_WEIGHT_LOCATION		4
 
-#define TANGENT_LOCATION_NMS		3
-#define BINORMAL_LOCATION_NMS		4
-#define BONE_ID_LOCATION_NMS		5
+#define TANGENT_LOCATION_NMS		  3
+#define BINORMAL_LOCATION_NMS		  4
+#define BONE_ID_LOCATION_NMS		  5
 #define BONE_WEIGHT_LOCATION_NMS	6
-
-using namespace glm;
-using namespace std;
 
 struct PhongMaterial
 {
@@ -33,45 +31,45 @@ struct PhongMaterial
 
 struct Texture
 {
-	uint id;
+	unsigned int id;
 	std::string type;
 	aiString path;
 };
 
 struct Textures
 {
-	vector<uint> id;
-	vector<std::string> types;
-	vector<aiString> path;
+	std::vector<unsigned int> id;
+	std::vector<std::string> types;
+	std::vector<aiString> path;
 };
 
 struct DefaultVertex
 {
-	vec3 position;
-	vec3 normal;
-	vec2 tex_coords;
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec2 tex_coords;
 };
 
 struct NormalMapVertex
 {
-	vec3 position;
-	vec3 normal;
-	vec2 tex_coords;
-	vec3 tangent;
-	vec3 binormal;
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec2 tex_coords;
+  glm::vec3 tangent;
+  glm::vec3 binormal;
 };
 
 #define NUM_BONES_PER_VERTEX 4
 struct SkeletalVertex
 {
-	vec3 position;
-	vec3 normal;
-	vec2 tex_coords;
+  glm::vec3 position;
+  glm::vec3 normal;
+  glm::vec2 tex_coords;
 
-	uint IDs[NUM_BONES_PER_VERTEX];
+	unsigned int IDs[NUM_BONES_PER_VERTEX];
 	float weights[NUM_BONES_PER_VERTEX];
 };
 
-void SetupDefaultVAO(uint* VAO, uint* VBO, uint* EBO, vector<DefaultVertex> vertices, vector<uint> indices);
-void SetupSkeletalVAO(uint* VAO, uint* VBO, uint* EBO, vector<SkeletalVertex> vertices, vector<uint> indices);
-void DestroyVAO(uint* VAO);
+void SetupDefaultVAO(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, std::vector<DefaultVertex> vertices, std::vector<unsigned int> indices);
+void SetupSkeletalVAO(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, std::vector<SkeletalVertex> vertices, std::vector<unsigned int> indices);
+void DestroyVAO(unsigned int* VAO);

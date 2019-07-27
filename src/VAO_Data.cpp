@@ -1,6 +1,8 @@
 #include "VAO_Data.h"
 
-void SetupDefaultVAO(uint* VAO, uint* VBO, uint* EBO, vector<DefaultVertex> vertices, vector<uint> indices)
+#include <GL/glew.h>
+
+void SetupDefaultVAO(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, std::vector<DefaultVertex> vertices, std::vector<unsigned int> indices)
 {
 	// Create buffers/arrays
 	glGenVertexArrays(1, &*VAO);
@@ -32,7 +34,7 @@ void SetupDefaultVAO(uint* VAO, uint* VBO, uint* EBO, vector<DefaultVertex> vert
 	glBindVertexArray(0);
 }
 
-void SetupSkeletalVAO(uint* VAO, uint* VBO, uint* EBO, vector<SkeletalVertex> vertices, vector<uint> indices)
+void SetupSkeletalVAO(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, std::vector<SkeletalVertex> vertices, std::vector<unsigned int> indices)
 {
 	// Create buffers/arrays
 	glGenVertexArrays(1, &*VAO);
@@ -71,7 +73,7 @@ void SetupSkeletalVAO(uint* VAO, uint* VBO, uint* EBO, vector<SkeletalVertex> ve
 	glBindVertexArray(0);
 }
 
-void DestroyVAO(uint* VAO)
+void DestroyVAO(unsigned int* VAO)
 {
 	glDeleteVertexArrays(1, &*VAO);
 }

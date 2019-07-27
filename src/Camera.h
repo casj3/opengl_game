@@ -3,13 +3,8 @@
 #include <glm\glm.hpp>
 #include <glm\gtx\transform.hpp>
 
-using namespace glm;
-
 #define WIDTH 1280
 #define HEIGHT 720
-
-//#define WIDTH 720
-//#define HEIGHT 1280
 
 struct Projection
 {
@@ -27,9 +22,9 @@ struct OrthoProjection
 
 struct View
 {
-	vec3 pos = vec3(0, 0, -8);
-	vec3 forward = vec3(0, 0, 1);
-	vec3 up = vec3(0, 1, 0);
+  glm::vec3 pos = glm::vec3(0, 0, -8);
+  glm::vec3 forward = glm::vec3(0, 0, 1);
+  glm::vec3 up = glm::vec3(0, 1, 0);
 };
 
 struct Camera
@@ -60,11 +55,11 @@ struct SlideProperties
 	bool slide;
 };
 
-mat4 ViewMatrix(View view);
+glm::mat4 ViewMatrix(View view);
 
-mat4 ProjectionMatrix(Projection projection);
+glm::mat4 ProjectionMatrix(Projection projection);
 
-mat4 OrthoProjectionMatrix(OrthoProjection projection);
+glm::mat4 OrthoProjectionMatrix(OrthoProjection projection);
 
 // The resulting float is meant to be added to the z component of the view position instanced at a higher level
 float Track(float trackValue, float* slideTimer, float deltaTime);

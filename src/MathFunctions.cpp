@@ -1,8 +1,8 @@
 #include "MathFunctions.h"
 
-float VecDistance(vec3 pos1, vec3 pos2)
+float VecDistance(glm::vec3 pos1, glm::vec3 pos2)
 {
-	vec3 dist;
+	glm::vec3 dist;
 	dist.x = pos1.x - pos2.x;
 	dist.y = pos1.y - pos2.y;
 	return length(dist);
@@ -11,8 +11,8 @@ float VecDistance(vec3 pos1, vec3 pos2)
 void ComputeTangentSpace(NormalMapVertex* v0, NormalMapVertex* v1, NormalMapVertex* v2)
 {
 	// Lengyels method
-	vec3 tangent, binormal, D, E;
-	vec2 F, G;
+	glm::vec3 tangent, binormal, D, E;
+	glm::vec2 F, G;
 
 	D = v1->position - v0->position;
 	E = v2->position - v0->position;
@@ -20,7 +20,7 @@ void ComputeTangentSpace(NormalMapVertex* v0, NormalMapVertex* v1, NormalMapVert
 	F = v1->tex_coords - v0->tex_coords;
 	G = v2->tex_coords - v0->tex_coords;
 
-	mat2 FG;
+	glm::mat2 FG;
 	FG[0][0] = F.x;
 	FG[1][0] = F.y;
 	FG[0][1] = G.x;
@@ -39,7 +39,7 @@ void ComputeTangentSpace(NormalMapVertex* v0, NormalMapVertex* v1, NormalMapVert
 	v2->binormal += binormal;
 }
 
-bool CircleCollision(vec3 pos1, vec3 pos2, float radius1, float radius2)
+bool CircleCollision(glm::vec3 pos1, glm::vec3 pos2, float radius1, float radius2)
 {
 	if (VecDistance(pos1, pos2) < radius1 + radius2)
 	{
@@ -50,10 +50,10 @@ bool CircleCollision(vec3 pos1, vec3 pos2, float radius1, float radius2)
 
 void ComputeNormalsPolygon(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* v2)
 {
-	vec3 vertex1 = v1->position - v0->position;
-	vec3 vertex2 = v2->position - v0->position;
+	glm::vec3 vertex1 = v1->position - v0->position;
+	glm::vec3 vertex2 = v2->position - v0->position;
 
-	vec3 normal = normalize(cross(vertex1, vertex2));
+	glm::vec3 normal = glm::normalize(glm::cross(vertex1, vertex2));
 
 	v0->normal += normal;
 	v1->normal += normal;
@@ -63,10 +63,10 @@ void ComputeNormalsPolygon(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* 
 // For flat quads only
 void ComputeNormalsQuad(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* v2, DefaultVertex* v3)
 {
-	vec3 vertex1 = v1->position - v0->position;
-	vec3 vertex2 = v2->position - v0->position;
+	glm::vec3 vertex1 = v1->position - v0->position;
+	glm::vec3 vertex2 = v2->position - v0->position;
 
-	vec3 normal = normalize(cross(vertex1, vertex2));
+	glm::vec3 normal = glm::normalize(glm::cross(vertex1, vertex2));
 
 	v0->normal += normal;
 	v1->normal += normal;
@@ -74,31 +74,31 @@ void ComputeNormalsQuad(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* v2,
 	v3->normal += normal;
 }
 
-bool DecomposeScale(mat4 matrix, vec3* scaling)
+bool DecomposeScale(glm::mat4 matrix, glm::vec3* scaling)
 {
-	scaling->x = length(matrix[0]);
-	scaling->y = length(matrix[1]);
-	scaling->z = length(matrix[2]);
+	scaling->x = glm::length(matrix[0]);
+	scaling->y = glm::length(matrix[1]);
+	scaling->z = glm::length(matrix[2]);
 
 	return true;
 }
 
 // TODO: This function generates errors still
-bool DecomposeRotation(mat4 matrix, quat& rotation)
+bool DecomposeRotation(glm::mat4 matrix, glm::quat& rotation)
 {
 	// Normalize the matrix
 	if (matrix[3][3] == 0)
 		return false;
 
-	for (length_t i = 0; i < 4; ++i)
-	for (length_t j = 0; j < 4; ++j)
+	for (int i = 0; i < 4; ++i)
+	for (int j = 0; j < 4; ++j)
 		matrix[i][j] /= matrix[3][3];
 
 	float trace = matrix[0][0] + matrix[1][1] + matrix[2][2];
 
 	if (trace > 0)
 	{
-		float s = 0.5f / sqrtf(trace + 1.0f);
+		float s = 0.5f / std::sqrtf(trace + 1.0f);
 		rotation.w = 0.25f / s;
 		rotation.x = (matrix[1][2] - matrix[2][1]) * s;
 		rotation.y = (matrix[2][0] - matrix[0][2]) * s;
@@ -108,7 +108,7 @@ bool DecomposeRotation(mat4 matrix, quat& rotation)
 	{
 		if (matrix[0][0] > matrix[1][1] && matrix[0][0] > matrix[2][2])
 		{
-			float s = 2.0f * sqrtf(1.0f + matrix[0][0] - matrix[1][1] - matrix[2][2]);
+			float s = 2.0f * std::sqrtf(1.0f + matrix[0][0] - matrix[1][1] - matrix[2][2]);
 			rotation.x = 0.25f * s;
 			rotation.w = (matrix[1][2] - matrix[2][1]) / s;
 			rotation.z = (matrix[2][0] + matrix[0][2]) / s;
@@ -116,7 +116,7 @@ bool DecomposeRotation(mat4 matrix, quat& rotation)
 		}
 		else if (matrix[1][1] > matrix[2][2])
 		{
-			float s = 2.0f * sqrtf(1.0f + matrix[1][1] - matrix[0][0] - matrix[2][2]);
+			float s = 2.0f * std::sqrtf(1.0f + matrix[1][1] - matrix[0][0] - matrix[2][2]);
 			rotation.y = 0.25f * s;
 			rotation.w = (matrix[2][0] - matrix[0][2]) / s;
 			rotation.z = (matrix[2][1] + matrix[1][2]) / s;
@@ -129,7 +129,7 @@ bool DecomposeRotation(mat4 matrix, quat& rotation)
 		}
 		else
 		{
-			float s = 2.0f * sqrtf(1.0f + matrix[2][2] - matrix[0][0] - matrix[1][1]);
+			float s = 2.0f * std::sqrtf(1.0f + matrix[2][2] - matrix[0][0] - matrix[1][1]);
 			rotation.z = 0.25f * s;
 			rotation.w = (matrix[0][1] - matrix[1][0]) / s;
 			rotation.y = (matrix[2][1] + matrix[1][2]) / s;
