@@ -22,13 +22,12 @@ src/main.cpp
 
 include_directories(include)
 
-#set(GLEW_INCLUDE_DIR include/GL)
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR})
 set(LIB ${CMAKE_SOURCE_DIR}/lib)
-#set(SDL2_LIBRARIES lib/SDL2.lib lib/SDL2main.lib lib/SDL2test.lib)
 
 find_package( OpenGL   REQUIRED )
 find_package( GLEW     REQUIRED )
+find_package( ASSIMP   REQUIRED )
 find_package( SDL2     REQUIRED )
 
 add_executable(GameOpenGL
@@ -36,4 +35,10 @@ ${SOURCE})
 
 target_include_directories(GameOpenGL PUBLIC ${INCLUDE_DIRS})
 
-target_link_libraries(GameOpenGL ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${LIB}/assimp.lib)
+target_link_libraries(GameOpenGL ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${ASSIMP_LIBRARIES})
+
+# Copy dll:s
+add_custom_command(TARGET GameOpenGL POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/dll" "${CMAKE_BINARY_DIR}/$<CONFIG>")
+
+# Copy shaders, models and textures
+add_custom_command(TARGET GameOpenGL POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/assets" "${CMAKE_BINARY_DIR}/$<CONFIG>")
