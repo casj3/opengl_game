@@ -13,6 +13,7 @@ src/utils/LibraryTranslations.cpp
 src/LoadVAO.cpp
 src/LoopManagement.cpp
 src/utils/MathFunctions.cpp
+src/utils/Array.cpp
 src/Shader.cpp
 src/Transform.cpp
 src/User.cpp
