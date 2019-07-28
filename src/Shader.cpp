@@ -9,12 +9,18 @@
 #include "Camera.h"
 
 void CheckShaderError(unsigned int shader, unsigned int flag, bool isProgram);
+unsigned int CreateShader(const char* source, unsigned int shaderType);
+std::string LoadShader(std::string fileName);
 
-void CreateDefaultProgram(ShaderProgramFiles shaderNames, DefaultProgram* shaders, DefaultUniforms* uniforms)
+void CreateDefaultProgram(DefaultProgram* shaders, DefaultUniforms* uniforms)
 {
 	shaders->program = glCreateProgram();
-	shaders->vertex_shader = CreateShader(LoadShader(shaderNames.vertex_shader_file), GL_VERTEX_SHADER);
-	shaders->fragment_shader = CreateShader(LoadShader(shaderNames.fragment_shader_file), GL_FRAGMENT_SHADER);
+	shaders->vertex_shader = CreateShader(
+#include "shaders/basicShader.vs"
+      , GL_VERTEX_SHADER);
+	shaders->fragment_shader = CreateShader(
+#include "shaders/basicShader.fs"
+      , GL_FRAGMENT_SHADER);
 
 	glAttachShader(shaders->program, shaders->vertex_shader);
 	glAttachShader(shaders->program, shaders->fragment_shader);
@@ -30,11 +36,15 @@ void CreateDefaultProgram(ShaderProgramFiles shaderNames, DefaultProgram* shader
 	uniforms->perspective_matrix = glGetUniformLocation(shaders->program, "perspective");
 }
 
-void CreateSkinningProgram(ShaderProgramFiles shaderNames, DefaultProgram* shaders, SkinningUniforms* uniforms)
+void CreateSkinningProgram(DefaultProgram* shaders, SkinningUniforms* uniforms)
 {
 	shaders->program = glCreateProgram();
-	shaders->vertex_shader = CreateShader(LoadShader(shaderNames.vertex_shader_file), GL_VERTEX_SHADER);
-	shaders->fragment_shader = CreateShader(LoadShader(shaderNames.fragment_shader_file), GL_FRAGMENT_SHADER);
+	shaders->vertex_shader = CreateShader(
+#include "shaders/skinningShader.vs"
+      , GL_VERTEX_SHADER);
+	shaders->fragment_shader = CreateShader(
+#include "shaders/basicShader.fs"
+      , GL_FRAGMENT_SHADER);
 
 	glAttachShader(shaders->program, shaders->vertex_shader);
 	glAttachShader(shaders->program, shaders->fragment_shader);
@@ -58,20 +68,18 @@ void CreateSkinningProgram(ShaderProgramFiles shaderNames, DefaultProgram* shade
 	}
 }
 
-unsigned int CreateShader(std::string text, unsigned int shaderType)
+unsigned int CreateShader(const char* source, unsigned int shaderType)
 {
 	unsigned int shader = glCreateShader(shaderType);
 
 	// Make sure there is a fucking shader
 	assert(shader != 0);
 
-	const char* shaderSourceStrings[1];
-	int shaderSourceStringLengths[1];
+	const char* shaderSource[1] = {source};
 
-	shaderSourceStrings[0] = text.c_str();
-	shaderSourceStringLengths[0] = text.length();
+	const int shaderLength[1] = { strlen(source) };
 
-	glShaderSource(shader, 1, shaderSourceStrings, shaderSourceStringLengths);
+	glShaderSource(shader, 1, shaderSource, shaderLength);
 	glCompileShader(shader);
 
 	CheckShaderError(shader, GL_COMPILE_STATUS, false);

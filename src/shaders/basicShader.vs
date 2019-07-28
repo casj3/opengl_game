@@ -1,3 +1,4 @@
+R"(
 #version 330
 
 layout(location = 0) in vec3 position;
@@ -22,3 +23,4 @@ void main()
 	normal0 = (world * normalL).xyz;
 	worldPos = (world * posL).xyz;
 }
+)"

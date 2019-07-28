@@ -60,8 +60,8 @@ struct ProgramSuper
 	Program program_type;
 };
 
-void CreateDefaultProgram(ShaderProgramFiles shaderNames, DefaultProgram* shaders, DefaultUniforms* uniforms);
-void CreateSkinningProgram(ShaderProgramFiles shaderNames, DefaultProgram* shaders, SkinningUniforms* uniforms);
+void CreateDefaultProgram(DefaultProgram* shaders, DefaultUniforms* uniforms);
+void CreateSkinningProgram(DefaultProgram* shaders, SkinningUniforms* uniforms);
 
 unsigned int CreateShader(std::string text, unsigned int shaderType);
 std::string LoadShader(std::string fileName);

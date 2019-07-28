@@ -43,14 +43,8 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
 	skeletalDrawUnits->textures.push_back(textures);
 	skeletalDrawUnits->indices_size.push_back(indices.size());
 
-	ShaderProgramFiles shaderFiles =
-	{
-		"./shaders/skinningShader.vs",
-		"./shaders/basicShader.fs"
-	};
-
 	// Create the shaders
-	CreateSkinningProgram(shaderFiles, &program->program_type.defaultProgram, &program->uniforms_type.skinningUniforms);
+	CreateSkinningProgram(&program->program_type.defaultProgram, &program->uniforms_type.skinningUniforms);
 
 	Bind(program->program_type.defaultProgram.program);
 

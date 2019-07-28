@@ -1,3 +1,4 @@
+R"(
 #version 330
 
 layout(location = 0) in vec3 position;
@@ -43,3 +44,4 @@ void main()
 	binormal0 = (world * binormalL).xyz;
 	worldPos = (world * posL).xyz;
 }
+)"
