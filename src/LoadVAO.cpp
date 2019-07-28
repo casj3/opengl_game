@@ -1,7 +1,7 @@
 #include "LoadVAO.h"
 
 #include <GL/glew.h>
-#include "LibraryTranslations.h"
+#include "utils/LibraryTranslations.h"
 #include <assimp/postprocess.h>
 
 #define STB_IMAGE_IMPLEMENTATION

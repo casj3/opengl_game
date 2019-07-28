@@ -9,10 +9,10 @@ src/Animation.cpp
 src/Camera.cpp
 src/Draw_VAO.cpp
 src/Input.cpp
-src/LibraryTranslations.cpp
+src/utils/LibraryTranslations.cpp
 src/LoadVAO.cpp
 src/LoopManagement.cpp
-src/MathFunctions.cpp
+src/utils/MathFunctions.cpp
 src/Shader.cpp
 src/Transform.cpp
 src/User.cpp
@@ -20,7 +20,7 @@ src/VAO_Data.cpp
 src/main.cpp
 )
 
-include_directories(include)
+include_directories(include src)
 
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR})
 set(LIB ${CMAKE_SOURCE_DIR}/lib)

@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 
 #include "VAO_Data.h"
-#include "MathFunctions.h"
+#include "utils/MathFunctions.h"
 
 struct Quad
 {

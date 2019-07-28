@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-#include "MathFunctions.h"
+#include "utils/MathFunctions.h"
 #include "VAO_Data.h"
 
 // Global variables which are declared as extern in different header files
