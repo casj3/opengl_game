@@ -1,4 +1,3 @@
-// Text
 
 #include "Animation.h"
 
