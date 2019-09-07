@@ -1,0 +1,136 @@
+
+
+Kommer vi att ha flera kameror?
+Jag skulle snarare tro att vi kommer ha samlingar av värden för att ändra den befintliga kameran.
+Vilka tabeller vet vi att vi kommer att ha?
+https://www.tablesgenerator.com/text_tables
+Varje entitet har en VAO. Varje VAO har en position i världen som ges av dess transform (SoA).
+
++--------+----------+----------+-------+
+| VAO_ID | POSITION | ROTATION | SCALE |
++--------+----------+----------+-------+
+| 0      | ###      | ###      | ###   |
++--------+----------+----------+-------+
+| 1      | ###      | ###      | ###   |
++--------+----------+----------+-------+
+
+Varje VAO är associerad till en samling texturer som skiljer sig i mängd. Hur ter det sig i minnet?
+Alla VAO har däremot inte en likadan samling material. Alla VAO har heller inte både material eller texturer nödvändigtvis.
+De borde ligga i separata tabeller vardera där den vänstraste spalten är ID:et per material- eller texturtabell varpå
+ID:t för tillhörande VAO ges.
+
++--------+----------------------+
+| VAO_ID | TEXTURES_START_INDEX |
++--------+----------------------+
+| 0      | 1                    |
++--------+----------------------+
+| 3      | 3                    |
++--------+----------------------+
+
++--------+-----------------------+
+| VAO_ID | MATERIALS_START_INDEX |
++--------+-----------------------+
+| 0      | 1                     |
++--------+-----------------------+
+| 3      | 3                     |
++--------+-----------------------+
+
+Olika typer av material kräver kanske olika tabeller.
+
+Varje matris tar upp en cache-rad så det är bättre att lagra skelettens transformer i arrayer av float[3]
+och sedan söka efter de som behövs för att generera benets transform för output-tabellen.
+
++---------+----------------------------+
+| BONE_ID | POSITION_TABLE_START_INDEX |
++---------+----------------------------+
+| 3       | 0                          |
++---------+----------------------------+
+| 5       | 4                          |
++---------+----------------------------+
+| 6       | 7                          |
++---------+----------------------------+
+
+struct SkeletonPositions {
+  uint32_t* bone_ID;
+  // The starting position in the entire table.
+  // The ending index is the next entry in the column.
+  uint32_t* bone_position_keys_start_index;
+
+  uint32_t rows;
+};
+
++----------+-----------+
+| POSITION | KEY_FRAME |
++----------+-----------+
+| ###      | ###       |
++----------+-----------+
+| ###      | ###       |
++----------+-----------+
+
+struct BonePositionKeys {
+  float* positions;
+  float* key_frames;
+
+  uint32_t rows;
+};
+
+Samma typ av tabeller behövs för rotation och skalning.
+
+Två positioner och keyframes behövs för att göra interpoleringen. Därefter måste samma sak göras för rotation, vi måste söka efter
+benet där och sen söka efter keyframes. Det är en sökning i två steg. Samma sökning görs för skalning och sen komponerar vi en matris
+av de tre producerade vektorerna(3). Detta är proceduren för ett ben. Vissa ben förändras däremot inte. Så frågan är hur vi gör med dem.
+Vi kan ha en andra tabell för alla ben som aldrig rör på sig. Det kan vara vår output-tabell som vi bara skriver till ifall av
+förändring. En array av transformer bara. Nu började jag tänka på hur man bäst samlar ihop till den bara. Det borde gå att rekursivt gå
+igenom hela skelettet vid keyframe 0, eller bara få tillgång till alla dessa ben på en gång kanske.
+
++---------+-------------+----------------+----------------+
+| BONE_ID | START_SCALE | START_ROTATION | START_POSITION |
++---------+-------------+----------------+----------------+
+| 0       | ###         | ###            | ###            |
++---------+-------------+----------------+----------------+
+| 1       | ###         | ###            | ###            |
++---------+-------------+----------------+----------------+
+
+En output-tabell finns för varje skelett.
+
++-------------+------------+
+| SKELETON_ID | BONE_TABLE |
++-------------+------------+
+| 0           | 0          |
++-------------+------------+
+| 1           | 1          |
++-------------+------------+
+
+Position, rotation och skalningstabeller skiljer sig per skelett.
+
++-------------+----------------+
+| SKELETON_ID | POSITION_TABLE |
++-------------+----------------+
+| 1           | 0              |
++-------------+----------------+
+| 3           | 1              |
++-------------+----------------+
+
+Skelettens relation till sina VAO ges på följande vis.
+
++-------------+--------+
+| SKELETON_ID | VAO_ID |
++-------------+--------+
+| 0           | 3      |
++-------------+--------+
+| 1           | 4      |
++-------------+--------+
+
+////////////////////////////////////////////////////////////////////////////////
+
+Vi kan göra så att våra generiska array-funktioner returnerar pekare till uint8_t som senare går att casta tillbaka till den valda
+typen.
+
+////////////////////////////////////////////////////////////////////////////////
+
+Istället för att ha flera olika typer av vertices borde vi ha en vertex-struct med valbara tilläggsstruktar. Detsamma borde göras för
+shader struktarna.
+
+////////////////////////////////////////////////////////////////////////////////
+
+Det är också en fråga om hur man bäst fördelar jobb och parallelliserar koden.
