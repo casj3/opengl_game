@@ -16,7 +16,7 @@ enum ProgramTypes
 	num_programs
 };
 
-enum Skeletons
+enum SkeletonTypes
 {
 	avatar,
 
