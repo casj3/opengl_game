@@ -123,6 +123,12 @@ Skelettens relation till sina VAO ges på följande vis.
 
 ////////////////////////////////////////////////////////////////////////////////
 
+Vi kan ha en allokator som tar hand om alla arrayer med pekare till pekare till en viss datatyp. Varje kolumn ska fylla sin egen cache-line,
+dvs 64 byte, 512 bit vilket innebär att en kolumn som består av struktar måste bestå av struktar som i storlek är en multipel av åtta bitar.
+Padding kan därför behövas.
+
+////////////////////////////////////////////////////////////////////////////////
+
 Vi kan göra så att våra generiska array-funktioner returnerar pekare till uint8_t som senare går att casta tillbaka till den valda
 typen.
 
