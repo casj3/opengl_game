@@ -14,6 +14,7 @@ src/LoadVAO.cpp
 src/LoopManagement.cpp
 src/utils/MathFunctions.cpp
 src/utils/Array.cpp
+src/utils/Allocator.cpp
 src/Shader.cpp
 src/Transform.cpp
 src/User.cpp
