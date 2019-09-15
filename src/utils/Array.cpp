@@ -4,10 +4,12 @@
 #include <stdlib.h>
 #include <intrin.h>
 
+#define INT32_BIT_SIZE 32
+
 int32_t* NewBusyMarkers(uint32_t numElements) {
-  int numFullRows = numElements / 32;
+  int numFullRows = numElements / INT32_BIT_SIZE;
   // In case we need more or less bits than what is divisible by the bit size
-  int partRow = (numElements % 32 > 0);
+  int partRow = (numElements % INT32_BIT_SIZE > 0);
   return (int32_t*)calloc(numFullRows + partRow, sizeof(int32_t));
 }
 
@@ -22,7 +24,7 @@ unsigned long GetFreeIndex(int32_t* busyMarkers) {
   // If busySpotRow hasn't incremented it means it has found an
   // indicator to use
   for (int i = 0; i == busySpotRow; i++) {
-    // If flipping all the bits is 0 it means all spots are marked as busy
+    // If flipping all bits is 0 then all spots are marked busy
     busySpotRow += ~busyMarkers[i] == 0;
   }
 
@@ -43,9 +45,14 @@ void Add(uint8_t* array, uint8_t element[], uint32_t sizeOfElement, uint32_t fre
   memcpy(&array[freeIndex * sizeOfElement], element, sizeOfElement);
 }
 
-void Remove(uint8_t* array, uint32_t sizeOfElement, uint32_t removeIndex, uint32_t backIndex) {
+void ReleaseBusySpot(int32_t* busyMarkers, uint32_t releaseIndex) {
+  // Mark the bit representing the element as not busy.
+  busyMarkers[releaseIndex/INT32_BIT_SIZE] &= ~(1 << (releaseIndex % INT32_BIT_SIZE));
+}
+
+void ReplaceWithBack(uint8_t* array, uint32_t sizeOfElement, uint32_t replaceIndex, uint32_t backIndex) {
   // Overwrite it with the last element, we don't want to iterate through empty slots.
-  memcpy(&array[removeIndex * sizeOfElement],
+  memcpy(&array[replaceIndex * sizeOfElement],
          &array[backIndex * sizeOfElement],
          sizeOfElement);
 }
