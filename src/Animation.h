@@ -12,72 +12,95 @@ struct SkeletonSuper
   int entity_id;
 };
 
+/// Maps skeletons to vertex array objects.
 struct Skeletons {
-  uint32_t* skeleton_ID;
-  uint32_t* vao_ID;
-
-  uint32_t rows;
+  uint32_t skeleton_array_id;
+  uint32_t vao_array_id;
 };
 
-// Accessed with skeleton_ID from array
+/// Maps bones to starting values for all bones.
 struct Skeleton {
-  uint32_t* bone_ID;
-  float* positions[3];
-  float* rotations[3];
-  float* scales[3];
+  uint32_t bone_array_id;
 
-  uint32_t rows;
+  uint32_t default_position_array_id;
+  uint32_t default_rotation_array_id;
+  uint32_t default_scale_array_id;
 };
 
+/// Maps skeletons to position arrays to see what
+/// skeletons animate in position.
+struct PositionSkeletons {
+  uint32_t skeleton_array_id;
+  uint32_t skeleton_position_array_id;
+};
+
+/// Maps skeletons to rotation arrays to see what
+/// skeletons animate in rotation.
+struct RotationSkeletons {
+  uint32_t skeleton_array_id;
+  uint32_t skeleton_rotation_array_id;
+};
+
+/// Maps skeletons to scale arrays to see what
+/// skeletons animate in scale.
+struct ScaleSkeletons {
+  uint32_t skeleton_array_id;
+  uint32_t skeleton_scale_array_id;
+};
+
+/// Maps bone array to bone position animations.
 struct SkeletonPositions {
-  uint32_t* bone_ID;
-  // The starting index in the entire table.
-  // The ending index is the next entry in the column.
-  uint32_t* bone_position_keys_start_index;
+  /// ID of array to match a bone with a start-index in an array with all
+  /// different key-frame corresponding positions for all bones.
+  uint32_t bone_array_id;
 
-  uint32_t rows;
+  /// The starting index in the array per bone.
+  /// The ending index is the next entry in the column.
+  uint32_t bone_position_start_key_array_id;
 };
 
-struct BonePositionKeys {
-  float* positions[3];
-  float* key_frames;
-
-  uint32_t rows;
-};
-
+/// Maps bone array to bone rotation animations.
 struct SkeletonRotations {
-  uint32_t* bone_ID;
-  // The starting index in the entire table.
-  // The ending index is the next entry in the column.
-  uint32_t* bone_rotation_keys_start_index;
+  /// ID of array to match a bone with a start-index in an array with all
+  /// different key-frame corresponding rotations for all bones.
+  uint32_t bone_array_id;
 
-  uint32_t rows;
+  /// The starting index in the array per bone.
+  /// The ending index is the next entry in the column/array.
+  uint32_t bone_rotation_start_key_array_id;
 };
 
-struct BoneRotationKeys {
-  float* rotations[3];
-  float* key_frames;
-
-  uint32_t rows;
-};
-
+/// Maps bone array to bone scale animations.
 struct SkeletonScales {
-  uint32_t* bone_ID;
-  // The starting index in the entire table.
-  // The ending index is the next entry in the column.
-  uint32_t* bone_scale_keys_start_index;
+  /// ID of array to match a bone with a start-index in an array with all
+  /// different key-frame corresponding scale values for all bones.
+  uint32_t bone_array_id;
 
-  uint32_t rows;
+  /// The starting index in the array per bone.
+  /// The ending index is the next entry in the column/array.
+  uint32_t bone_scale_start_key_array_id;
 };
 
+/// Maps position values to key frames.
+struct BonePositionKeys {
+  uint32_t position_array_id;
+  uint32_t key_frame_array_id;
+};
+
+/// Maps rotation values to key frames.
+struct BoneRotationKeys {
+  uint32_t rotation_array_id;
+  uint32_t key_frame_array_id;
+};
+
+/// Maps scale values to key frames.
 struct BoneScaleKeys {
-  float* scales[3];
-  float* key_frames;
-
-  uint32_t rows;
+  uint32_t scale_array_id;
+  uint32_t key_frame_array_id;
 };
 
-// This method presupposes an exact correlation between animation keys and the indicies of the matrix std::vector within the vector
+// This method presupposes an exact correlation between animation keys and
+// the indicies of the matrix std::vector within the vector
 void SetAnimationBones(float animationTime, SkeletonSuper* animSuper);
 
 // The key_bone_frames mustn't be deallocated because it is a std::vector
