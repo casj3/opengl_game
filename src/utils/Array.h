@@ -13,7 +13,7 @@ uint8_t* NewArray(uint32_t sizeOfElement, uint32_t numElements);
 /// @param element The element to add.
 /// @param sizeOfElement The size in bytes of the element type.
 /// @param freeIndex The index in the array where the element will be added.
-void Add(uint8_t* array, uint8_t element[], uint32_t sizeOfElement, uint32_t freeIndex);
+void AddElement(uint8_t* array, uint8_t element[], uint32_t sizeOfElement, uint32_t freeIndex);
 
 /// Removes the element at the given index by replacing it with the last written element
 /// in the array. The last element is therefore moved to the place of the removed element.
@@ -38,13 +38,14 @@ void ReleaseBusySpot(int32_t* busyMarkers, uint32_t releaseIndex);
 /// @param sizeOfElement The size in bytes of the element type.
 /// @param numelElements The number of elements to allocate space for.
 uint8_t* ResizeArray(uint8_t* array, uint32_t sizeOfElement, uint32_t numElements);
+//uint8_t* ResizeBusyMarkers(uint8_t* array, uint32_t sizeOfElement, uint32_t numElements);
 
 /// Returns a new array of bits signifying busy or not busy
 /// array indicies by being 1 or 0.
 ///
 /// @param numElements The number of elements to create a collection of
 ///                    busy markers for.
-int32_t* NewBuysMarkers(uint32_t numElements);
+int32_t* NewBusyMarkers(uint32_t numElements);
 
 /// Finds the first not busy index in the array by finding the first
 /// 0 bit. Its position signifies the first not busy position in the

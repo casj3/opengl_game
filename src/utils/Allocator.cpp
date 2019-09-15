@@ -9,46 +9,49 @@
 
 #define INIT_NUM_ARRAYS 5
 
+struct ArraysMetaData {
+  int32_t* busy_flags;
+  uint32_t* array_sizes;
+  uint32_t num_arrays;
+};
+
 float** float_arrays;
-uint32_t* float_arrays_num_elements;
-uint32_t num_float_arrays;
+ArraysMetaData float_arrays_meta_data;
 
 float** float3_arrays;
-uint32_t* float3_arrays_num_elements;
-uint32_t num_float3_arrays;
+ArraysMetaData float3_arrays_meta_data;
 
 uint32_t** uint32_arrays;
-uint32_t* uint32_arrays_num_elements;
-uint32_t num_uint32_arrays;
+ArraysMetaData uint32_arrays_meta_data;
 
 void InitAllocator() {
   float_arrays = (float**)NewArray(sizeof(float**), INIT_NUM_ARRAYS);
-  float_arrays_num_elements = (uint32_t*)NewArray(sizeof(uint32_t*), INIT_NUM_ARRAYS);
-  num_float_arrays = INIT_NUM_ARRAYS;
+  float_arrays_meta_data.busy_flags = NewBusyMarkers(INIT_NUM_ARRAYS);
+  float_arrays_meta_data.array_sizes = (uint32_t*)NewArray(sizeof(float), INIT_NUM_ARRAYS);
+  float_arrays_meta_data.num_arrays = INIT_NUM_ARRAYS;
 
   float3_arrays = (float**)NewArray(sizeof(float**), INIT_NUM_ARRAYS);
-  float3_arrays_num_elements = (uint32_t*)NewArray(sizeof(uint32_t*), INIT_NUM_ARRAYS);
-  num_float3_arrays = INIT_NUM_ARRAYS;
+  float3_arrays_meta_data.busy_flags = NewBusyMarkers(INIT_NUM_ARRAYS);
+  float3_arrays_meta_data.array_sizes = (uint32_t*)NewArray(sizeof(float), INIT_NUM_ARRAYS);
+  float3_arrays_meta_data.num_arrays = INIT_NUM_ARRAYS;
 
   uint32_arrays = (uint32_t**)NewArray(sizeof(uint32_t**), INIT_NUM_ARRAYS);
-  uint32_arrays_num_elements = (uint32_t*)NewArray(sizeof(uint32_t*), INIT_NUM_ARRAYS);
-  num_uint32_arrays = INIT_NUM_ARRAYS;
-
-  for(int i = 0; i < INIT_NUM_ARRAYS; i++) {
-    float_arrays[i] = (float*)NewArray(sizeof(float), INIT_NUM_ARRAYS);
-    float_arrays_num_elements[i] = INIT_NUM_ARRAYS;
-
-    float3_arrays[i] = (float*)NewArray(sizeof(float[3]), INIT_NUM_ARRAYS);
-    float3_arrays_num_elements[i] = INIT_NUM_ARRAYS;
-
-    uint32_arrays[i] = (uint32_t*)NewArray(sizeof(uint32_t), INIT_NUM_ARRAYS);
-    uint32_arrays_num_elements[i] = INIT_NUM_ARRAYS;
-  }
+  uint32_arrays_meta_data.busy_flags = NewBusyMarkers(INIT_NUM_ARRAYS);
+  uint32_arrays_meta_data.array_sizes = (uint32_t*)NewArray(sizeof(float), INIT_NUM_ARRAYS);
+  uint32_arrays_meta_data.num_arrays = INIT_NUM_ARRAYS;
 }
 
-// void AddFloat3Array(uint32_t size);
-// void AddFloatArray(uint32_t size);
-// void AddUint32Array(uint32_t size);
-// 
+// TODO: Vi måste ha ett sätt att garantera att det alltyid finns en plats att ta i busy_flags så
+// vi vet när vi ska ändra storleken på arrayen för arrayer.
+uint32_t AddFloatArray(uint32_t size) {
+  uint32_t freeIndex = GetFreeIndex(float_arrays_meta_data.busy_flags);
+  float* float_array = (float*)NewArray(sizeof(float), size);
+  AddElement((uint8_t*)float_arrays, (uint8_t*)float_array, sizeof(float*), freeIndex);
+
+  return freeIndex;
+}
+//uint32_t AddFloat3Array(uint32_t size);
+//uint32_t AddUint32Array(uint32_t size);
+
 // void AddFloat(uint32_t arrayId, float element);
 // void AddFloat3(uint32_t arrayId, float element[3]);

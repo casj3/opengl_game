@@ -41,7 +41,7 @@ unsigned long GetFreeIndex(int32_t* busyMarkers) {
   return index;
 }
 
-void Add(uint8_t* array, uint8_t element[], uint32_t sizeOfElement, uint32_t freeIndex) {
+void AddElement(uint8_t* array, uint8_t element[], uint32_t sizeOfElement, uint32_t freeIndex) {
   memcpy(&array[freeIndex * sizeOfElement], element, sizeOfElement);
 }
 
