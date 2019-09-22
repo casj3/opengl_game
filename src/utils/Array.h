@@ -36,9 +36,14 @@ void ReleaseBusySpot(int32_t* busyMarkers, uint32_t releaseIndex);
 ///
 /// @param array Pointer to array.
 /// @param sizeOfElement The size in bytes of the element type.
-/// @param numelElements The number of elements to allocate space for.
+/// @param numElements The number of elements to allocate space for.
 uint8_t* ResizeArray(uint8_t* array, uint32_t sizeOfElement, uint32_t numElements);
-//uint8_t* ResizeBusyMarkers(uint8_t* array, uint32_t sizeOfElement, uint32_t numElements);
+
+/// Returns a resized busy markers array. Don't cast to anything.
+///
+/// @param busyMarkers The array of busy flags.
+/// @param numElements The number of elements to allocate space for.
+int32_t* ResizeBusyMarkers(int32_t* busyMarkers, uint32_t numElements);
 
 /// Returns a new array of bits signifying busy or not busy
 /// array indicies by being 1 or 0.

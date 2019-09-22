@@ -9,7 +9,7 @@
 int32_t* NewBusyMarkers(uint32_t numElements) {
   int numFullRows = numElements / INT32_BIT_SIZE;
   // In case we need more or less bits than what is divisible by the bit size
-  int partRow = (numElements % INT32_BIT_SIZE > 0);
+  int partRow = (numElements % INT32_BIT_SIZE) > 0;
   return (int32_t*)calloc(numFullRows + partRow, sizeof(int32_t));
 }
 
@@ -59,4 +59,11 @@ void ReplaceWithBack(uint8_t* array, uint32_t sizeOfElement, uint32_t replaceInd
 
 uint8_t* ResizeArray(uint8_t* array, uint32_t sizeOfElement, uint32_t numElements) {
   return (uint8_t*)realloc(array, sizeOfElement * numElements);
+}
+
+int32_t* ResizeBusyMarkers(int32_t* busyMarkers, uint32_t numElements) {
+  int numFullRows = numElements / INT32_BIT_SIZE;
+  // In case we need more or less bits than what is divisible by the bit size
+  int partRow = (numElements % INT32_BIT_SIZE) > 0;
+  return (int32_t*)realloc(busyMarkers, sizeof(int32_t) * (numFullRows + partRow));
 }
