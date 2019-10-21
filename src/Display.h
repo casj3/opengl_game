@@ -2,7 +2,7 @@
 
 #include <assert.h>
 #include <GL/glew.h>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 #include <string>
 
 SDL_Window* window;

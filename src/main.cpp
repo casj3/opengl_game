@@ -1,6 +1,6 @@
 #define STB_IMAGE_IMPLEMENTATION
 
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include "Display.h"
 #include "Camera.h"

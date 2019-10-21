@@ -1,7 +1,5 @@
-cmake_minimum_required (VERSION 3.11.4)
+CMAKE_MINIMUM_REQUIRED( VERSION 3.0 )
 project(GameOpenGL)
-
-MESSAGE("Current compiler should be MSVC and is ${CMAKE_C_COMPILER_ID}")
 
 SET(SOURCE
 src/main.cpp
@@ -22,25 +20,37 @@ src/VAO_Data.cpp
 src/main.cpp
 )
 
-include_directories(include src)
+include_directories(
+include
+src
+)
 
-list(APPEND CMAKE_PREFIX_PATH ${CMAKE_SOURCE_DIR})
-set(LIB ${CMAKE_SOURCE_DIR}/lib)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake-modules")
 
-find_package( OpenGL   REQUIRED )
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/third-party/SDL2-2.0.10")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/third-party/assimp-master")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/third-party/glm")
+list(APPEND CMAKE_PREFIX_PATH "${CMAKE_SOURCE_DIR}/third-party/glew-2.1.0")
+
+find_package( OPENGL   REQUIRED )
+
 find_package( GLEW     REQUIRED )
-find_package( ASSIMP   REQUIRED )
+include_directories(${GLEW_INCLUDE_DIR})
+
+find_package( assimp   REQUIRED )
+include_directories(${ASSIMP_INCLUDE_DIR})
+
 find_package( SDL2     REQUIRED )
+include_directories(${SDL2_INCLUDE_DIR})
+
+find_package( GLM      REQUIRED )
+include_directories(${GLM_INCLUDE_DIR})
 
 add_executable(GameOpenGL
 ${SOURCE})
 
-target_include_directories(GameOpenGL PUBLIC ${INCLUDE_DIRS})
-
-target_link_libraries(GameOpenGL ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${ASSIMP_LIBRARIES})
-
-# Copy dll:s
-add_custom_command(TARGET GameOpenGL POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/dll" "${CMAKE_BINARY_DIR}/$<CONFIG>")
+ASSIMP_COPY_BINARIES(${CMAKE_BINARY_DIR})
+target_link_libraries(GameOpenGL ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${ASSIMP_LIBRARY})
 
 # Copy shaders, models and textures
 add_custom_command(TARGET GameOpenGL POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/assets" "${CMAKE_BINARY_DIR}/$<CONFIG>")

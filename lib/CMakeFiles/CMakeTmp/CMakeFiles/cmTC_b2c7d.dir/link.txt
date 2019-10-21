@@ -1,3 +1,0 @@
-"D:\Program Files\CMake\bin\cmake.exe" -E remove -f CMakeFiles\cmTC_b2c7d.dir/objects.a
-"D:\Program Files\mingw-w64\x86_64-8.1.0-win32-seh-rt_v6-rev0\mingw64\bin\ar.exe" cr CMakeFiles\cmTC_b2c7d.dir/objects.a @CMakeFiles\cmTC_b2c7d.dir\objects1.rsp
-"D:\Program Files\mingw-w64\x86_64-8.1.0-win32-seh-rt_v6-rev0\mingw64\bin\g++.exe"      -Wl,--whole-archive CMakeFiles\cmTC_b2c7d.dir/objects.a -Wl,--no-whole-archive  -o cmTC_b2c7d.exe -Wl,--out-implib,libcmTC_b2c7d.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\cmTC_b2c7d.dir\linklibs.rsp

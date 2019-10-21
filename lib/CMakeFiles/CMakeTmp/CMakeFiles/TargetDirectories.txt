@@ -1,3 +1,0 @@
-D:/Kod/Eget/opengl_game_cmake/lib/CMakeFiles/CMakeTmp/CMakeFiles/cmTC_b2c7d.dir
-D:/Kod/Eget/opengl_game_cmake/lib/CMakeFiles/CMakeTmp/CMakeFiles/edit_cache.dir
-D:/Kod/Eget/opengl_game_cmake/lib/CMakeFiles/CMakeTmp/CMakeFiles/rebuild_cache.dir
