@@ -1,35 +1,34 @@
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-	set(ASSIMP_ARCHITECTURE "64")
-elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
-	set(ASSIMP_ARCHITECTURE "32")
-endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 if(WIN32)
-  set(ASSIMP_ROOT_DIR "third-party/assimp-master")
+  if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    set(ASSIMP_ARCHITECTURE x64)
+  elseif(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    set(ASSIMP_ARCHITECTURE x86)
+  endif(CMAKE_SIZEOF_VOID_P EQUAL 8)
 
 	# Find path of each library
 	find_path(ASSIMP_INCLUDE_DIR
 		NAMES
 			assimp/anim.h
 		HINTS
-			${ASSIMP_ROOT_DIR}/include
+			include
 	)
 
-  set(ASSIMP_MSVC_VERSION "vc${MSVC_TOOLSET_VERSION}")
-
 	if(MSVC12 OR MSVC14)
+    set(ASSIMP_MSVC_VERSION "vc${MSVC_TOOLSET_VERSION}")
+
     find_library(ASSIMP_LIBRARY_RELEASE
       NAMES
        Release/assimp-${ASSIMP_MSVC_VERSION}-mt.lib
       HINTS
-       ${ASSIMP_ROOT_DIR}/lib
+       ${ASSIMP_ROOT_DIR}/lib/${ASSIMP_ARCHITECTURE}
     )
 
     find_library(ASSIMP_LIBRARY_DEBUG
       NAMES
        Debug/assimp-${ASSIMP_MSVC_VERSION}-mtd.lib
       HINTS
-       ${ASSIMP_ROOT_DIR}/lib
+        ${ASSIMP_ROOT_DIR}/lib/${ASSIMP_ARCHITECTURE}
     )
 
 		set(ASSIMP_LIBRARY
@@ -39,13 +38,13 @@ if(WIN32)
 
 		set(ASSIMP_LIBRARIES "ASSIMP_LIBRARY_RELEASE" "ASSIMP_LIBRARY_DEBUG")
 
-		FUNCTION(ASSIMP_COPY_BINARIES TargetDirectory)
-      ADD_CUSTOM_COMMAND(TARGET ${CMAKE_PROJECT_NAME}
-        COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_ROOT_DIR}/bin/Debug/assimp-${ASSIMP_MSVC_VERSION}-mtd.dll ${TargetDirectory}/Debug
-        COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_ROOT_DIR}/bin/Release/assimp-${ASSIMP_MSVC_VERSION}-mt.dll ${TargetDirectory}/Release
-			  COMMENT "Copying Assimp binaries to '${TargetDirectory}'"
-			  VERBATIM)
-		ENDFUNCTION(ASSIMP_COPY_BINARIES)
+    #FUNCTION(ASSIMP_COPY_BINARIES TargetDirectory)
+     #  ADD_CUSTOM_COMMAND(TARGET ${CMAKE_PROJECT_NAME}
+     #    COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_ROOT_DIR}/bin/Debug/assimp-${ASSIMP_MSVC_VERSION}-mtd.dll ${TargetDirectory}/Debug
+     #    COMMAND ${CMAKE_COMMAND} -E copy ${ASSIMP_ROOT_DIR}/bin/Release/assimp-${ASSIMP_MSVC_VERSION}-mt.dll ${TargetDirectory}/Release
+	   #	  COMMENT "Copying Assimp binaries to '${TargetDirectory}'"
+	   #	  VERBATIM)
+	   #ENDFUNCTION(ASSIMP_COPY_BINARIES)
 	endif()
 
 else(WIN32)
