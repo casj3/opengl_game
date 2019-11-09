@@ -30,5 +30,23 @@ uint32_t AddFloat3Array(uint32_t size);
 /// @return the ID of the array, i.e. the index in the array of arrays.
 uint32_t AddUint32Array(uint32_t size);
 
-// void AddFloat(uint32_t arrayId, float element);
-// void AddFloat3(uint32_t arrayId, float element[3]);
+/// Adds a float element to a float array.
+///
+/// @param arrayId The ID of the array.
+/// @param elementId The desired ID of the element in the array.
+/// @param element The element value.
+void AddFloat(uint32_t arrayId, uint32_t elementId, float element);
+
+/// Adds a float3 element to a float3 array.
+///
+/// @param arrayId The ID of the array.
+/// @param elementId The desired ID of the element in the array.
+/// @param element The element value.
+void AddFloat3(uint32_t arrayId, uint32_t elementId, float element[3]);
+
+/// Adds a uint32 element to a uint32 array.
+///
+/// @param arrayId The ID of the array.
+/// @param elementId The desired ID of the element in the array.
+/// @param element The element value.
+void AddUint32(uint32_t arrayId, uint32_t elementId, uint32_t element);

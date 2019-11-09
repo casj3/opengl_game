@@ -9,6 +9,7 @@
 
 #define INIT_NUM_ARRAYS 5
 #define NUM_ARRAYS_RESIZE_ADDITION 10
+#define ARRAY_RESIZE_ADDITION 10
 
 // TODO: This needs padding
 struct ArraysMetaData {
@@ -119,5 +120,31 @@ uint32_t AddUint32Array(uint32_t size) {
   return freeIndex;
 }
 
-// void AddFloat(uint32_t arrayId, float element);
-// void AddFloat3(uint32_t arrayId, float element[3]);
+void AddFloat(uint32_t arrayId, uint32_t elementId, float element) {
+  if (float_arrays_meta_data.array_sizes[arrayId] <= elementId) {
+    float_arrays_meta_data.array_sizes[arrayId] += ARRAY_RESIZE_ADDITION;
+    ResizeArray((uint8_t*)float_arrays[arrayId], sizeof(float), float_arrays_meta_data.array_sizes[arrayId]);
+  }
+
+  float_arrays[arrayId][elementId] = element;
+}
+
+void AddFloat3(uint32_t arrayId, uint32_t elementId, float element[3]) {
+  if (float3_arrays_meta_data.array_sizes[arrayId] <= elementId) {
+    float3_arrays_meta_data.array_sizes[arrayId] += ARRAY_RESIZE_ADDITION;
+    ResizeArray((uint8_t*)float3_arrays[arrayId], sizeof(float[3]), float3_arrays_meta_data.array_sizes[arrayId]);
+  }
+
+  float3_arrays[arrayId][elementId++] = element[0];
+  float3_arrays[arrayId][elementId++] = element[1];
+  float3_arrays[arrayId][elementId]   = element[2];
+}
+
+void AddUint32(uint32_t arrayId, uint32_t elementId, uint32_t element) {
+  if (uint32_arrays_meta_data.array_sizes[arrayId] <= elementId) {
+    uint32_arrays_meta_data.array_sizes[arrayId] += ARRAY_RESIZE_ADDITION;
+    ResizeArray((uint8_t*)uint32_arrays[arrayId], sizeof(uint32_t), uint32_arrays_meta_data.array_sizes[arrayId]);
+  }
+
+  uint32_arrays[arrayId][elementId] = element;
+}
