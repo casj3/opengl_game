@@ -139,4 +139,6 @@ shader struktarna.
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Det är också en fråga om hur man bäst fördelar jobb och parallelliserar koden.
+Det är också en fråga om hur man bäst fördelar jobb och parallelliserar koden. Problemet med att tilldela borttagna element med elementet
+längst bak är att det hindrar möjligheten till att ta bort flera element samtidigt. Elementen kan tas bort parallellt men måste täppas igen
+sekventiellt senare i såna fall.
