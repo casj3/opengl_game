@@ -141,4 +141,5 @@ shader struktarna.
 
 Det är också en fråga om hur man bäst fördelar jobb och parallelliserar koden. Problemet med att tilldela borttagna element med elementet
 längst bak är att det hindrar möjligheten till att ta bort flera element samtidigt. Elementen kan tas bort parallellt men måste täppas igen
-sekventiellt senare i såna fall.
+sekventiellt senare i såna fall. Detsamma gäller för när kolumner läggs till eller tas bort; så fort funktionen pillar på en gemensamt ägd
+variabel får vi parallelliseringsbekymmer. Anroparen måste därför hålla reda på attributen som den manipulerar.
