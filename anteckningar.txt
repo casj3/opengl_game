@@ -1,5 +1,4 @@
 
-
 Kommer vi att ha flera kameror?
 Jag skulle snarare tro att vi kommer ha samlingar av vÃ¤rden fÃ¶r att Ã¤ndra den befintliga kameran.
 Vilka tabeller vet vi att vi kommer att ha?
@@ -121,6 +120,8 @@ Skelettens relation till sina VAO ges pÃ¥ fÃ¶ljande vis.
 | 1           | 4      |
 +-------------+--------+
 
+Det finns bara en Position(/Rotation/Scale)Skeletons instans. Det finns bara en Skeletons instans. Ska skeletons hålla i de andra strukturerna? Spelare det ens någon roll? Med tanke på hur små och få de är borde det inte ha någon betydelse. Det hjälper ju verkligen tydligheter i koden också.
+
 ////////////////////////////////////////////////////////////////////////////////
 
 Vi kan ha en allokator som tar hand om alla arrayer med pekare till pekare till en viss datatyp. Varje kolumn ska fylla sin egen cache-line,
@@ -143,3 +144,8 @@ Det Ã¤r ocksÃ¥ en frÃ¥ga om hur man bÃ¤st fÃ¶rdelar jobb och parallelliserar kod
 lÃ¤ngst bak Ã¤r att det hindrar mÃ¶jligheten till att ta bort flera element samtidigt. Elementen kan tas bort parallellt men mÃ¥ste tÃ¤ppas igen
 sekventiellt senare i sÃ¥na fall. Detsamma gÃ¤ller fÃ¶r nÃ¤r kolumner lÃ¤ggs till eller tas bort; sÃ¥ fort funktionen pillar pÃ¥ en gemensamt Ã¤gd
 variabel fÃ¥r vi parallelliseringsbekymmer. Anroparen mÃ¥ste dÃ¤rfÃ¶r hÃ¥lla reda pÃ¥ attributen som den manipulerar.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Det blir rörigt med handtag överallt. Jag vet inte vad de är till för, helt säkert. Jag är totalt beroende av dokumentationen, vilket kanske inte
+är så dåligt egentligen. Jag borde lägga till vad handtagen är associerade till.
