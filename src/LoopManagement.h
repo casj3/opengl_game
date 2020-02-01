@@ -6,7 +6,7 @@
 #include "LoadVAO.h"
 #include "Animation.h"
 
-void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* program, SkeletonSuper* skeletonSuper, UserSuper* user);
+void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* program, struct Skeletons* skeletons, UserSuper* user);
 
 void UpdateUser(UserSuper* user, View* view, float deltaTime);
 

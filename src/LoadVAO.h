@@ -8,12 +8,13 @@
 #include <assimp/matrix4x4.h>
 //#include <assimp/postprocess.h>
 #include "VAO_Data.h"
+#include "Animation.h"
 
 // Everything we need is stored in the scene object - the retrieved data can be used as arguments for the other functions
 const aiScene* ImportScene(Assimp::Importer* importer, std::string path);
 
 std::vector<DefaultVertex> LoadVertices(aiMesh* mesh);
-std::vector<SkeletalVertex> LoadSkeletalVertices(aiMesh* mesh, std::vector<std::vector<glm::mat4>>* boneKeys, const aiScene* scene);
+struct Skeletons LoadSkeletalVertices(aiMesh* mesh, const aiScene* scene);
 std::vector<unsigned int> LoadIndices(aiMesh* mesh);
 
 Textures LoadTextures(aiMesh* mesh, const aiScene* scene, std::string path, Textures texturesLoaded);

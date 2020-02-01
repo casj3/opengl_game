@@ -22,7 +22,7 @@ struct SkeletonSuper
 /// skeletons animate in position.
 /// This structure should not be in an array.
 struct PositionSkeletons {
-    uint32_t bone_array_id;
+    uint32_t skeleton_array_id;
     /// ID to array of type SkeletonPositions.
     uint32_t skeleton_position_array_id;
 };
@@ -31,7 +31,7 @@ struct PositionSkeletons {
 /// skeletons animate in rotation.
 /// This structure should not be in an array.
 struct RotationSkeletons {
-    uint32_t bone_array_id;
+    uint32_t skeleton_array_id;
     /// ID to array of type SkeletonRotations.
     uint32_t skeleton_rotation_array_id;
 };
@@ -40,7 +40,7 @@ struct RotationSkeletons {
 /// skeletons animate in scale.
 /// This structure should not be in an array.
 struct ScaleSkeletons {
-    uint32_t bone_array_id;
+    uint32_t skeleton_array_id;
     /// ID to array of type SkeletonScales.
     uint32_t skeleton_scale_array_id;
 };
@@ -49,7 +49,9 @@ struct ScaleSkeletons {
 /// This structure should not be in an array. There should only exist once
 /// instance of this structure in the program.
 struct Skeletons {
-    uint32_t bone_array_id;
+    uint32_t skeleton_array_id;
+    
+    /// Float3 array IDs
     uint32_t default_position_array_id;
     uint32_t default_rotation_array_id;
     uint32_t default_scale_array_id;
