@@ -8,6 +8,12 @@
 /// other allocator functions.
 void InitAllocator();
 
+struct Float3 {
+    float x;
+    float y;
+    float z;
+};
+
 /// Adds a float3 array to the array of float3 arrays.
 ///
 /// @param size The size in elements of the new array.
@@ -28,7 +34,14 @@ void ResizeFloat3Arrays(uint32_t elementsToAdd);
 /// @param arrayId The ID of the array.
 /// @param elementId The desired ID of the element in the array.
 /// @param element The element value.
-void AddFloat3(uint32_t arrayId, uint32_t elementId, float element[3]);
+void AddFloat3(uint32_t arrayId, uint32_t elementId, struct Float3 element);
+
+
+/// @param arrayId The ID of the array.
+/// @param elementId The desired ID of the element in the array.
+///
+/// @return a copy of the element.
+struct Float3 GetFloat3(uint32_t arrayId, uint32_t elementId);
 
 /// Expands the capacity of the capacity of a float3 array.
 ///
@@ -43,6 +56,7 @@ void ResizeFloat3Array(uint32_t arrayId, uint32_t elementsToAdd);
     const uint32_t Get##functionName##ArrayCapacity(uint32_t arrayId);  \
     void Resize##functionName##Arrays(uint32_t elementsToAdd);          \
     void Add##functionName##(uint32_t arrayId, uint32_t elementId, type element); \
+    type Get##functionName##(uint32_t arrayId, uint32_t elementId);     \
     void Resize##functionName##Array(uint32_t arrayId, uint32_t elementsToAdd);
 
 AddArrayTypeDeclaration(Float, float)

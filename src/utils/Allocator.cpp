@@ -50,6 +50,10 @@ struct ArraysMetaData {
         name##_arrays[arrayId][elementId] = element;                    \
     }                                                                   \
                                                                         \
+    type Get##functionName##(uint32_t arrayId, uint32_t elementId) {    \
+        return name##_arrays[arrayId][elementId];                      \
+    }                                                                   \
+                                                                        \
     void Resize##functionName##Array(uint32_t arrayId, uint32_t elementsToAdd) { \
         name##_arrays_meta_data.array_sizes[arrayId] += elementsToAdd;  \
         ResizeArray((uint8_t*)name##_arrays[arrayId], sizeof(type), name##_arrays_meta_data.array_sizes[arrayId]); \
@@ -63,6 +67,7 @@ struct ArraysMetaData {
     }
 
 AddArrayType(Float, float, float)
+AddArrayType(Float3, float3, struct Float3)
 AddArrayType(Uint32, uint32, uint32_t)
 
 // Types from Animation.h
@@ -70,54 +75,58 @@ AddArrayType(SkeletonPositions, skeleton_positions, struct SkeletonPositions)
 AddArrayType(SkeletonRotations, skeleton_rotations, struct SkeletonRotations)
 AddArrayType(SkeletonScales, skeleton_scales, struct SkeletonScales)
 
-// float3 needs to be treated differently so the macro function does not apply for it.
-float** float3_arrays;
-struct ArraysMetaData float3_arrays_meta_data;
+// // float3 needs to be treated differently so the macro function does not apply for it.
+// float** float3_arrays;
+// struct ArraysMetaData float3_arrays_meta_data;
 
-const uint32_t AddFloat3Array(uint32_t size){
-  uint32_t freeIndex = GetFreeIndex(float3_arrays_meta_data.busy_flags);
-  float* float3_array = (float*)NewArray(sizeof(float[3]), size);
-  float3_arrays[freeIndex] = float3_array;
-  float3_arrays_meta_data.array_sizes[freeIndex] = size;
+// const uint32_t AddFloat3Array(uint32_t size){
+//   uint32_t freeIndex = GetFreeIndex(float3_arrays_meta_data.busy_flags);
+//   float* float3_array = (float*)NewArray(sizeof(float[3]), size);
+//   float3_arrays[freeIndex] = float3_array;
+//   float3_arrays_meta_data.array_sizes[freeIndex] = size;
 
-  return freeIndex;
-}
+//   return freeIndex;
+// }
 
-const uint32_t GetFloat3ArrayCapacity(uint32_t arrayId) {
-    return float3_arrays_meta_data.array_sizes[arrayId];
-}
+// const uint32_t GetFloat3ArrayCapacity(uint32_t arrayId) {
+//     return float3_arrays_meta_data.array_sizes[arrayId];
+// }
 
-void ResizeFloat3Arrays(uint32_t elementsToAdd) {
-  float3_arrays_meta_data.num_arrays += elementsToAdd;
+// void ResizeFloat3Arrays(uint32_t elementsToAdd) {
+//   float3_arrays_meta_data.num_arrays += elementsToAdd;
 
-  float3_arrays = (float**)ResizeArray((uint8_t*)float3_arrays, sizeof(float**),
-                   float3_arrays_meta_data.num_arrays);
+//   float3_arrays = (float**)ResizeArray((uint8_t*)float3_arrays, sizeof(float**),
+//                    float3_arrays_meta_data.num_arrays);
 
-  float3_arrays_meta_data.array_sizes = (uint32_t*)ResizeArray((uint8_t*)float3_arrays_meta_data.array_sizes,
-                                                               sizeof(uint32_t),
-                                                               float3_arrays_meta_data.num_arrays);
+//   float3_arrays_meta_data.array_sizes = (uint32_t*)ResizeArray((uint8_t*)float3_arrays_meta_data.array_sizes,
+//                                                                sizeof(uint32_t),
+//                                                                float3_arrays_meta_data.num_arrays);
 
-  float3_arrays_meta_data.busy_flags = ResizeBusyMarkers(float3_arrays_meta_data.busy_flags,
-                                                         float3_arrays_meta_data.num_arrays);
-}
+//   float3_arrays_meta_data.busy_flags = ResizeBusyMarkers(float3_arrays_meta_data.busy_flags,
+//                                                          float3_arrays_meta_data.num_arrays);
+// }
 
-void AddFloat3(uint32_t arrayId, uint32_t elementId, float element[3]) {
-  float3_arrays[arrayId][elementId++] = element[0];
-  float3_arrays[arrayId][elementId++] = element[1];
-  float3_arrays[arrayId][elementId]   = element[2];
-}
+// void AddFloat3(uint32_t arrayId, uint32_t elementId, float element[3]) {
+//   float3_arrays[arrayId][elementId++] = element[0];
+//   float3_arrays[arrayId][elementId++] = element[1];
+//   float3_arrays[arrayId][elementId]   = element[2];
+// }
 
-void ResizeFloat3Array(uint32_t arrayId, uint32_t elementsToAdd) {
-  float3_arrays_meta_data.array_sizes[arrayId] += elementsToAdd;
-  ResizeArray((uint8_t*)float3_arrays[arrayId], sizeof(float[3]), float3_arrays_meta_data.array_sizes[arrayId]);
-}
+// float GetFloat3(uint32_t arrayId, uint32_t elementId) {
+    
+// }
 
-void InitFloat3Arrays(uint32_t capacity) {
-  float3_arrays = (float**)NewArray(sizeof(float**), capacity);
-  float3_arrays_meta_data.busy_flags = NewBusyMarkers(capacity);
-  float3_arrays_meta_data.array_sizes = (uint32_t*)NewArray(sizeof(uint32_t), capacity);
-  float3_arrays_meta_data.num_arrays = capacity;
-}
+// void ResizeFloat3Array(uint32_t arrayId, uint32_t elementsToAdd) {
+//   float3_arrays_meta_data.array_sizes[arrayId] += elementsToAdd;
+//   ResizeArray((uint8_t*)float3_arrays[arrayId], sizeof(float[3]), float3_arrays_meta_data.array_sizes[arrayId]);
+// }
+
+// void InitFloat3Arrays(uint32_t capacity) {
+//   float3_arrays = (float**)NewArray(sizeof(float**), capacity);
+//   float3_arrays_meta_data.busy_flags = NewBusyMarkers(capacity);
+//   float3_arrays_meta_data.array_sizes = (uint32_t*)NewArray(sizeof(uint32_t), capacity);
+//   float3_arrays_meta_data.num_arrays = capacity;
+// }
 
 void InitAllocator(uint32_t capacity) {
   InitFloatArrays(capacity);
