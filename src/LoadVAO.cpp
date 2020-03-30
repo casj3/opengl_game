@@ -192,12 +192,12 @@ struct Skeletons LoadSkeletalVertices(aiMesh* mesh, const aiScene* scene)
 
     // TODO: Some serious rethinking. I'm leaking.
 
-    skeletons.skeleton_array_id = AddUint32Array(mesh->mNumVertices);
+    skeletons.skeleton_array_id = Allocator::AddArray<uint32_t>(mesh->mNumVertices);
 
-    assert(mesh->mNumVertices == GetUint32ArrayCapacity(skeletons.skeleton_array_id));
-    for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
+    assert(mesh->mNumVertices == Allocator::GetArraySize<uint32_t>(skeletons.skeleton_array_id));
+    // for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
         
-    }
+    // }
     return skeletons;
     
     // std::vector<SkeletalVertex> vertices;

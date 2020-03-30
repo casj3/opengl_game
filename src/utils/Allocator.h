@@ -1,68 +1,129 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdlib.h>
 
-#include "Animation.h"
+#include <glm/glm.hpp>
 
-/// Sets start values for all containers. Must be called before utilizing the
-/// other allocator functions.
-void InitAllocator();
+#include "Array.h"
 
-struct Float3 {
-    float x;
-    float y;
-    float z;
+namespace Allocator {
+// Different columns which will only be known to the allocator.
+// It is the owner and sole distributor of allocated memory.
+// It keeps pointers to arrays of pointers to other arrays.
+
+// TODO: This needs padding
+template<typename T>
+struct Arrays {
+    T** elements;
+    int32_t* busy_flags;
+    uint32_t* sizes;
+    // The number of allocated slots may be larger than the amount of used elements for iterating.
+    uint32_t* capacities;
+    uint32_t num_arrays;
 };
 
-/// Adds a float3 array to the array of float3 arrays.
+template<typename T>
+Arrays<T> arrays;
+
+template<typename T>
+struct ArrayHandle {
+    uint32_t id;
+};
+
+/// Adds a array to the collection of arrays.
 ///
 /// @param size The size in elements of the new array.
 ///
-/// @return the ID of the array, i.e. the index in the array of arrays.
-const uint32_t AddFloat3Array(uint32_t size);
+/// @return the handle of the array, i.e. the index in the array of arrays.
+template<typename T>
+const ArrayHandle<T> AddArray(uint32_t size) {
+    uint32_t freeIndex = Array::GetFreeIndex(arrays<T>.busy_flags, arrays<T>.num_arrays);
+    const ArrayHandle<T> handle = { freeIndex };
+    
+    if (freeIndex < arrays<T>.num_arrays &&
+        arrays<T>.elements[handle.id] != NULL &&
+        size <= arrays<T>.capacities[handle.id]) {
+    } else if (freeIndex >= arrays<T>.num_arrays) {
+        freeIndex = arrays<T>.num_arrays;
+        ResizeArrays<T>(10);
+        arrays<T>.elements[handle.id] = Array::NewArray<T>(size);
+        arrays<T>.capacities[handle.id] = size;
+    } else if (arrays<T>.elements[handle.id] == NULL) {
+        arrays<T>.elements[handle.id] = Array::NewArray<T>(size);
+        arrays<T>.capacities[handle.id] = size;
+    } else if (arrays<T>.capacities[handle.id] < size) {
+        ResizeArray<T>(handle, size - arrays<T>.capacities[handle.id]);
+    }
+    arrays<T>.sizes[handle.id] = size;
+        
+    return handle;
+}
 
-/// @return the current max capacity of a float3 array.
-const uint32_t GetFloat3ArrayCapacity(uint32_t arrayId);
+/// Removes array from the collection of arrays.
+///
+/// @param handle The handle to the array.
+template<typename T>
+void RemoveArray(const ArrayHandle<T> handle) {
+    Array::ReleaseBusySpot(arrays.busy_flags, handle.id);
+}
 
-/// Expands the capacity of the array of float3 arrays.
+/// Expands the capacity of an array.
+///
+/// @param handle The handle to the array.
+/// @param elementsToAdd The number of slots to expand the capacity of the array with.
+template<typename T>
+void ResizeArray(const ArrayHandle<T> handle, uint32_t elementsToAdd) {
+    arrays<T>.capacities[handle.id] += elementsToAdd;
+    arrays<T>.elements[handle.id] = Array::ResizeArray<T>(arrays<T>.elements[handle.id], arrays<T>.capacities[handle.id]);
+}
+
+/// Expands the capacity of the array of arrays.
 ///
 /// @param elementsToAdd The number of slots to expand the capacity of the array with.
-void ResizeFloat3Arrays(uint32_t elementsToAdd);
+template<typename T>
+void ResizeArrays(uint32_t elementsToAdd) {
+    arrays<T>.num_arrays += elementsToAdd;
 
-/// Adds a float3 element to a float3 array.
-///
-/// @param arrayId The ID of the array.
-/// @param elementId The desired ID of the element in the array.
-/// @param element The element value.
-void AddFloat3(uint32_t arrayId, uint32_t elementId, struct Float3 element);
+    arrays<T>.elements = Array::ResizeArray<T*>(arrays<T>.elements, arrays<T>.num_arrays);
+    arrays<T>.sizes = Array::ResizeArray<uint32_t>(arrays<T>.sizes, arrays<T>.num_arrays);
+    arrays<T>.capacities = Array::ResizeArray<uint32_t>(arrays<T>.capacities, arrays<T>.num_arrays);
+    arrays<T>.busy_flags = Array::ResizeBusyMarkers(arrays<T>.busy_flags, arrays<T>.num_arrays);
+}
 
+template<typename T>
+const uint32_t GetArraySize(const ArrayHandle<T> handle) {
+    return arrays<T>.sizes[handle.id];
+}
 
-/// @param arrayId The ID of the array.
+/// @param handle The handle to the array.
 /// @param elementId The desired ID of the element in the array.
 ///
 /// @return a copy of the element.
-struct Float3 GetFloat3(uint32_t arrayId, uint32_t elementId);
-
-/// Expands the capacity of the capacity of a float3 array.
+template<typename T>
+T GetElement(const ArrayHandle<T> handle, uint32_t elementId) {
+    return arrays<T>.elements[handle.id][elementId];
+}
+    
+/// Set value of an element in the array.
 ///
-/// @param arrayId The array to resize.
-/// @param elementsToAdd The number of slots to expand the capacity of the array with.
-void ResizeFloat3Array(uint32_t arrayId, uint32_t elementsToAdd);
+/// @param handle The handle to the array.
+/// @param elementId The desired ID of the element in the array.
+/// @param element The value to assign the element.
+template<typename T>
+void SetElement(const ArrayHandle<T> handle, uint32_t elementId, T element) {
+    arrays<T>.elements[handle.id][elementId] = T;
+}
 
-// The subsequent types mentioned below should function similarly to the ones above
-// so I won't bother to document them. I'll just add a macro function.
-#define AddArrayTypeDeclaration(functionName, type)                     \
-    const uint32_t Add##functionName##Array(uint32_t size);             \
-    const uint32_t Get##functionName##ArrayCapacity(uint32_t arrayId);  \
-    void Resize##functionName##Arrays(uint32_t elementsToAdd);          \
-    void Add##functionName##(uint32_t arrayId, uint32_t elementId, type element); \
-    type Get##functionName##(uint32_t arrayId, uint32_t elementId);     \
-    void Resize##functionName##Array(uint32_t arrayId, uint32_t elementsToAdd);
+template<typename T>
+void InitArrays(uint32_t capacity) {
+    arrays<T>.elements = Array::NewArray<T*>(capacity);
+    arrays<T>.sizes = Array::NewArray<uint32_t>(capacity);
+    arrays<T>.capacities = Array::NewArray<uint32_t>(capacity);
+    arrays<T>.busy_flags = Array::NewBusyMarkers(capacity);
+    arrays<T>.num_arrays = capacity;
+}    
 
-AddArrayTypeDeclaration(Float, float)
-AddArrayTypeDeclaration(Uint32, uint32_t)
-
-// Types from Animation.h
-AddArrayTypeDeclaration(SkeletonPositions, SkeletonPositions)
-AddArrayTypeDeclaration(SkeletonRotations, SkeletonRotations)
-AddArrayTypeDeclaration(SkeletonScales, SkeletonScales)
+/// Initializes the allocator.
+void InitAllocator();
+}

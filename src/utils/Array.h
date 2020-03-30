@@ -1,29 +1,26 @@
 
 #include <stdint.h>
 
-/// Creates a new array. Meant to be cast to the chosen type.
-///
-/// @param sizeOfElement The size in bytes of the element type.
-/// @param numelElements The number of elements to allocate space for.
-uint8_t* NewArray(uint32_t sizeOfElement, uint32_t numElements);
+namespace Array {
+/// Creates a new array.
+template<typename T>
+T* NewArray(uint32_t numElements) {
+    return (T*)calloc(numElements, sizeof(T));
+}
 
 /// Adds an element to the array at the specified location.
-///
-/// @param array Pointer to array.
-/// @param element The element to add.
-/// @param sizeOfElement The size in bytes of the element type.
-/// @param freeIndex The index in the array where the element will be added.
-void AddElement(uint8_t* array, uint8_t element[], uint32_t sizeOfElement, uint32_t freeIndex);
+template<typename T>
+void AddElement(T* array, T element, uint32_t freeIndex) {
+    memcpy(&array[freeIndex], element, sizeof(T));
+}
 
 /// Removes the element at the given index by replacing it with the last written element
 /// in the array. The last element is therefore moved to the place of the removed element.
-///
-/// @param array Pointer to array.
-/// @param sizeOfElement The size in bytes of the element type.
-/// @param replaceIndex The index of the element which will be replaced by the last written element.
-/// @param backIndex The index of the element in the back of the array which will replace the
-///                  chosen element.
-void ReplaceWithBack(uint8_t* array, uint32_t sizeOfElement, uint32_t replaceIndex, uint32_t backIndex);
+template<typename T>
+void ReplaceWithBack(T* array, uint32_t replaceIndex, uint32_t backIndex) {
+    // Overwrite it with the last element, we don't want to iterate through empty slots.
+    memcpy(&array[replaceIndex], &array[backIndex], sizeof(T));
+}
 
 /// Sets a bit signifying an index in an array to 0, meaning that
 /// the array spot is not busy.
@@ -32,12 +29,15 @@ void ReplaceWithBack(uint8_t* array, uint32_t sizeOfElement, uint32_t replaceInd
 /// @param releaseIndex The position of the bit to assign 0.
 void ReleaseBusySpot(int32_t* busyMarkers, uint32_t releaseIndex);
 
-/// Returns a resized array. Meant to be cast to the chosen type.
+/// Returns a resized array.
 ///
 /// @param array Pointer to array.
 /// @param sizeOfElement The size in bytes of the element type.
 /// @param numElements The number of elements to allocate space for.
-uint8_t* ResizeArray(uint8_t* array, uint32_t sizeOfElement, uint32_t numElements);
+template<typename T>
+T* ResizeArray(T* array, uint32_t numElements) {
+    return (T*)realloc(array, sizeof(T) * numElements);
+}
 
 /// Returns a resized busy markers array. Don't cast to anything.
 ///
@@ -58,6 +58,8 @@ int32_t* NewBusyMarkers(uint32_t numElements);
 /// switched to 1.
 ///
 /// @param busyMarkers The collection of busy bits.
+/// @param numElements The size of busy markers bits to be utilized.
 ///
-/// @returns the first not busy index in the array.
-unsigned long GetFreeIndex(int32_t* busyMarkers);
+/// @returns the first not busy index in the array or a larger index if no free index is found.
+unsigned long GetFreeIndex(int32_t* busyMarkers, uint32_t numElements);
+}

@@ -149,3 +149,17 @@ variabel fÃ¥r vi parallelliseringsbekymmer. Anroparen mÃ¥ste dÃ¤rfÃ¶r hÃ¥lla red
 
 Det blir rörigt med handtag överallt. Jag vet inte vad de är till för, helt säkert. Jag är totalt beroende av dokumentationen, vilket kanske inte
 är så dåligt egentligen. Jag borde lägga till vad handtagen är associerade till.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Vi måste ha ett sätt att ta bort och lägga till kolumner. Detsamma gäller kanske för buffrarna. För dem skulle vi använda oss av principen att placera det
+senast tillagda elementet i det borttagna elementets ställe. Vi bara buffer/kolumn IDn, inte element/rad IDn. Dessa metoder saknas för tillfället. För
+kolumnerna så måste vi veta hur många kolumner som finns. Det har vi i ArraysMetaData.num_arrays variabeln. Först ser vi ifall vi har tillräckligt med
+rader i vår busy markers bit samling. Har vi inte tillräckligt många rader vet vi att arrayen behöver omallokeras. Vi kan jämföra
+ArraysMetaData.busy_flags_size med ArraysMetaData.num_arrays om vi använder GetBusyMarkersArraySize() kanske. Så vi kan veta antalet tillgängliga rader,
+vilket gör att vi kan hitta ett index och om det indexet är för stort får vi omallokera arrayen.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Det måste finnas ett sätt att ta bort element på. För tillfället finns det inte det. Inte genom allocatorn iaf. Vid en första tanke känns det rimligt
+att ersätta det borttagna elementet med det sista. Har inte tänkt igenom det särskilt mycket. Avvaktar till ett konkret fall dyker upp.
