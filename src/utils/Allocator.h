@@ -7,12 +7,39 @@
 
 #include "Array.h"
 
+#define NUM_NEW_ARRAYS 10
+#define NUM_NEW_ELEMENTS 10
+
+template<typename T>
+struct ArrayHandle {
+    uint32_t id;
+};
+
+template<typename T>
+struct AppendArray {
+    ArrayHandle<T> handle;
+    uint32_t counter = 0;
+};
+
+template<typename T>
+struct RemoveAtEndOfScope {
+    RemoveAtEndOfScope(ArrayHandle<T> arrayHandle) {
+        array_handle = arrayHandle;
+    }
+
+    ~RemoveAtEndOfScope() {
+        Allocator::RemoveArray(array_handle);
+    }
+
+    ArrayHandle<T> array_handle;
+};
+
 namespace Allocator {
 // Different columns which will only be known to the allocator.
 // It is the owner and sole distributor of allocated memory.
-// It keeps pointers to arrays of pointers to other arrays.
+// It keeps pointers to arrays of pointers to other arrays, which
+// are accessed through ArrayHandles.
 
-// TODO: This needs padding
 template<typename T>
 struct Arrays {
     T** elements;
@@ -23,13 +50,9 @@ struct Arrays {
     uint32_t num_arrays;
 };
 
+/// Should not be accessed directly. Only indirect access through function use is allowed.
 template<typename T>
-Arrays<T> arrays;
-
-template<typename T>
-struct ArrayHandle {
-    uint32_t id;
-};
+extern Arrays<T> arrays;
 
 /// Adds a array to the collection of arrays.
 ///
@@ -40,13 +63,10 @@ template<typename T>
 const ArrayHandle<T> AddArray(uint32_t size) {
     uint32_t freeIndex = Array::GetFreeIndex(arrays<T>.busy_flags, arrays<T>.num_arrays);
     const ArrayHandle<T> handle = { freeIndex };
-    
-    if (freeIndex < arrays<T>.num_arrays &&
-        arrays<T>.elements[handle.id] != NULL &&
-        size <= arrays<T>.capacities[handle.id]) {
-    } else if (freeIndex >= arrays<T>.num_arrays) {
+
+    if (freeIndex >= arrays<T>.num_arrays) {
         freeIndex = arrays<T>.num_arrays;
-        ResizeArrays<T>(10);
+        ResizeArrays<T>(NUM_NEW_ARRAYS);
         arrays<T>.elements[handle.id] = Array::NewArray<T>(size);
         arrays<T>.capacities[handle.id] = size;
     } else if (arrays<T>.elements[handle.id] == NULL) {
@@ -55,8 +75,9 @@ const ArrayHandle<T> AddArray(uint32_t size) {
     } else if (arrays<T>.capacities[handle.id] < size) {
         ResizeArray<T>(handle, size - arrays<T>.capacities[handle.id]);
     }
+
     arrays<T>.sizes[handle.id] = size;
-        
+
     return handle;
 }
 
@@ -65,7 +86,7 @@ const ArrayHandle<T> AddArray(uint32_t size) {
 /// @param handle The handle to the array.
 template<typename T>
 void RemoveArray(const ArrayHandle<T> handle) {
-    Array::ReleaseBusySpot(arrays.busy_flags, handle.id);
+    Array::ReleaseBusySpot(arrays<T>.busy_flags, handle.id);
 }
 
 /// Expands the capacity of an array.
@@ -112,7 +133,34 @@ T GetElement(const ArrayHandle<T> handle, uint32_t elementId) {
 /// @param element The value to assign the element.
 template<typename T>
 void SetElement(const ArrayHandle<T> handle, uint32_t elementId, T element) {
-    arrays<T>.elements[handle.id][elementId] = T;
+    arrays<T>.elements[handle.id][elementId] = element;
+}
+
+/// Appends a value to an array.
+///
+/// @param array The AppendArray.
+/// @param element The value to assign the element.
+///
+/// @returns the updated AppendArray.
+template<typename T>
+AppendArray<T> AppendElement(AppendArray<T> array, T element) {
+    arrays<T>.elements[array.handle.id][array.counter++] = element;
+    return array;
+}
+
+/// Replaces the specified element with the back element and decrements the appended elements count of the array.
+///
+/// @param array The AppendArray.
+/// @param elementId The id of the element to replace with the back element.
+///
+/// @returns the updated AppendArray.
+template<typename T>
+void ReplaceWithBack(AppendArray<T> array, uint32_t elementId) {
+    // If the the element to be replaced is the last, the array should simply be decremented in size.
+    if (array.counter - 1 != elementId) {
+        arrays<T>.elements[array.handle.id][elementId] = arrays<T>.elements[handle.id][array.counter - 1];
+    }
+    array.counter--;
 }
 
 template<typename T>

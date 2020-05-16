@@ -16,6 +16,7 @@ src/LoopManagement.cpp
 src/utils/MathFunctions.cpp
 src/utils/Array.cpp
 src/utils/Allocator.cpp
+src/utils/Sort.cpp
 src/Shader.cpp
 src/Transform.cpp
 src/User.cpp

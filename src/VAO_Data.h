@@ -6,6 +6,8 @@
 #include <vector>
 #include <string>
 
+#include "utils/Allocator.h"
+
 // These macros are only valid for a normal map skeletal vertex
 #define POSITION_LOCATION			  0
 #define NORMAL_LOCATION				  1
@@ -20,10 +22,10 @@
 
 struct PhongMaterial
 {
-	float ka[3];
-	float kd[3];
-	float ks[3];
-	float shininess;
+    float ka[3];
+    float kd[3];
+    float ks[3];
+    float shininess;
 };
 
 // This texture struct should be used in case the texture is imported through ASSIMP. Otherwise
@@ -31,43 +33,43 @@ struct PhongMaterial
 
 struct Texture
 {
-	unsigned int id;
-	std::string type;
-	aiString path;
+    unsigned int id;
+    std::string type;
+    aiString path;
 };
 
 struct Textures
 {
-	std::vector<unsigned int> id;
-	std::vector<std::string> types;
-	std::vector<aiString> path;
+    std::vector<unsigned int> id;
+    std::vector<std::string> types;
+    std::vector<aiString> path;
 };
 
 struct DefaultVertex
 {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 tex_coords;
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 tex_coords;
 };
 
 struct NormalMapVertex
 {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 tex_coords;
-  glm::vec3 tangent;
-  glm::vec3 binormal;
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 tex_coords;
+    glm::vec3 tangent;
+    glm::vec3 binormal;
 };
 
 #define NUM_BONES_PER_VERTEX 4
 struct SkeletalVertex
 {
-  glm::vec3 position;
-  glm::vec3 normal;
-  glm::vec2 tex_coords;
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 tex_coords;
 
-	unsigned int IDs[NUM_BONES_PER_VERTEX];
-	float weights[NUM_BONES_PER_VERTEX];
+    unsigned int IDs[NUM_BONES_PER_VERTEX];
+    float weights[NUM_BONES_PER_VERTEX];
 };
 
 void SetupDefaultVAO(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, std::vector<DefaultVertex> vertices, std::vector<unsigned int> indices);

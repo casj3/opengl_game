@@ -4,6 +4,7 @@
 
 #include <glm/glm.hpp>
 
+#include <utils/Allocator.h>
 #include "utils/MathFunctions.h"
 #include "VAO_Data.h"
 
@@ -12,6 +13,7 @@ Input currentUpdate;
 Input lastUpdate;
 MouseWheel mouseWheel;
 
+// TODO: Must have a more generic way of loading scenes.
 void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* program,
                       struct Skeletons* skeletons, UserSuper* user)
 {
@@ -21,8 +23,9 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
     // ... a scene
     const aiScene* scene = ImportScene(&importer, avatarPath);
 
-    // All the vertices and indices to create a VAO
-    // std::vector<SkeletalVertex> skeletalVertices = LoadSkeletalVertices(scene->mMeshes[0], &skeletonSuper->key_bone_frames, scene);
+    // All the vertices and indices to create a VAO'
+    uint32_t skeleton_id;
+    ArrayHandle<SkeletalVertex> skeletalVertices = LoadSkeletalVertices(scene, &skeleton_id);
     std::vector<unsigned int> indices = LoadIndices(scene->mMeshes[0]);
 
     // At the moment I don't think I need to store the data of the VBO and EBO,
@@ -154,12 +157,12 @@ void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, unsigned int pr
     // We choose an arbitrary phong material for the avatar draw unit
 
     PhongMaterial avatarPhong =
-	{
+        {
             { 0.1f, 0.1f, 0.0f },
             { 0.5f, 0.5f, 0.0f },
             { 1, 1, 1 },
             1000
-	};
+        };
 
     // We draw the avatar without the texture to test the validity of the shaders. OBS! This function is clearly not
     // finished for the sake of scalability.
