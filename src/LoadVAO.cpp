@@ -19,7 +19,7 @@ constexpr uint32_t kFirstKeyFrame = 0;
 // Helper functions internal to the file
 void RemoveNodeKeyFrameValues(ArrayHandle<NodeKeyFrameValues> nodes) {
     uint32_t arraySize = Allocator::GetArraySize<>(nodes);
-    for(int i = 0; i < arraySize; i++) {
+    for(uint32_t i = 0; i < arraySize; i++) {
         NodeKeyFrameValues node = Allocator::GetElement<>(nodes, i);
         Allocator::RemoveArray<>(node.positions.handle);
         Allocator::RemoveArray<>(node.rotations.handle);
@@ -36,7 +36,7 @@ ArrayHandle<NodeKeyFrameValues> ImportGlobalBonesThroughTime(ArrayHandle<NodeKey
 
 void AddGlobalBonesForKeyFrame(aiNode* root,
                                aiNodeAnim** channels,
-                               Transform parentTransform,
+                               aiMatrix4x4* parent,
                                ArrayHandle<NodeKeyFrameValues> nodes,
                                ArrayHandle<Pair<uint32_t, uint32_t>> animNodeMarkers,
                                ArrayHandle<Pair<uint32_t, uint32_t>> boneNodeMarkers,
@@ -48,14 +48,15 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
 void AddGlobalBonesForFirstKeyFrame(aiNode* root,
                                     aiMesh* mesh,
                                     aiAnimation* animation,
-                                    Transform parentTransform,
+                                    aiMatrix4x4* parent,
                                     AppendArray<NodeKeyFrameValues> nodes,
                                     AppendArray<Pair<uint32_t, uint32_t>> animNodeMarkers,
                                     AppendArray<Pair<uint32_t, uint32_t>> boneNodeMarkers,
                                     uint32_t numKeyFrames,
                                     uint32_t nodeCounter);
 
-Transform GetNodeAnimGlobalTransform(Transform parentTransform, const aiNodeAnim* nodeAnim, uint32_t keyFrame);
+void GetGlobalMatrix(aiMatrix4x4* parent, const aiNodeAnim* nodeAnim, uint32_t keyFrame);
+Transform GetGlobalTransform(aiMatrix4x4* matrix);
 
 const aiNodeAnim* FindNodeAnim(aiAnimation* animation,
                                const char* nodeName,
@@ -302,9 +303,9 @@ ArrayHandle<SkeletalVertex> LoadSkeletalVertices(const aiScene* scene,
 
     for (uint32_t i = 0; i < mesh->mNumBones; i++) {
         std::string boneName(mesh->mBones[i]->mName.data);
-        glm::mat4 boneOffset = aiMatrix4x4ToGlm(mesh->mBones[i]->mOffsetMatrix);
 
-        // TODO: Write the retrieved values held by nodes to Animation.h structures. Find a way to pass it to the GPU.
+        glm::mat4 boneOffset = aiMatrix4x4ToGlm(mesh->mBones[i]->mOffsetMatrix);
+        NodeKeyFrameValues node = Allocator::GetElement<>(nodes, i);
 
         for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; j++)
         {
@@ -351,15 +352,18 @@ ArrayHandle<NodeKeyFrameValues> ImportGlobalBonesThroughTime(ArrayHandle<NodeKey
     ArrayHandle<Pair<uint32_t, uint32_t>> animNodeMarkers = Allocator::AddArray<Pair<uint32_t, uint32_t>>(mesh->mNumBones);
     ArrayHandle<Pair<uint32_t, uint32_t>> boneNodeMarkers = Allocator::AddArray<Pair<uint32_t, uint32_t>>(mesh->mNumBones);
 
+    aiMatrix4x4 unityMatrix = aiMatrix4x4();
+
     // Record values for succeeding traversals of the node tree.
-    AddGlobalBonesForFirstKeyFrame(meshRoot, mesh, animation, {}, { boneNodes, }, { animNodeMarkers }, { boneNodeMarkers }, numKeyFrames, 0);
+    AddGlobalBonesForFirstKeyFrame(meshRoot, mesh, animation, &unityMatrix, { boneNodes, }, { animNodeMarkers }, { boneNodeMarkers }, numKeyFrames, 0);
 
     // Since the ID:s of the used channels and for which nodes have been recorded by the traversal using first key frame, the
     // animation channels can be used directly for the upcoming traversals.
     aiNodeAnim** channels = animation->mChannels;
 
+    unityMatrix = aiMatrix4x4();
     for(uint32_t i = kFirstKeyFrame + 1; i < numKeyFrames; i++) {
-        AddGlobalBonesForKeyFrame(meshRoot, channels, {}, boneNodes, animNodeMarkers, boneNodeMarkers, i, 0, 0, 0);
+        AddGlobalBonesForKeyFrame(meshRoot, channels, &unityMatrix, boneNodes, animNodeMarkers, boneNodeMarkers, i, 0, 0, 0);
     }
 
     // Use the AppendArrays to create the new key frame tables for scale, rotation and position per bone.
@@ -374,7 +378,7 @@ ArrayHandle<NodeKeyFrameValues> ImportGlobalBonesThroughTime(ArrayHandle<NodeKey
 /// Sets the elements identified by keyFrame if it is not the first one, i.e. 0.
 void AddGlobalBonesForKeyFrame(aiNode* root,
                                aiNodeAnim** channels,
-                               Transform parentTransform,
+                               aiMatrix4x4* parent,
                                ArrayHandle<NodeKeyFrameValues> nodes,
                                ArrayHandle<Pair<uint32_t, uint32_t>> animNodeMarkers,
                                ArrayHandle<Pair<uint32_t, uint32_t>> boneNodeMarkers,
@@ -385,7 +389,7 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
     Pair<uint32_t, uint32_t> animNodeMarker = Allocator::GetElement<Pair<uint32_t, uint32_t>>(animNodeMarkers, animNodeCounter);
     if (nodeCounter == animNodeMarker.key) {
         aiNodeAnim* nodeAnim = channels[animNodeMarker.value];
-        parentTransform = GetNodeAnimGlobalTransform(parentTransform, nodeAnim, keyFrame);
+        GetGlobalMatrix(parent, nodeAnim, keyFrame);
 
         // Increment counter to compare with the next entry in the array for the next node.
         // Only increment the counter if it's within array bounds.
@@ -404,6 +408,8 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
         Pair<uint32_t, glm::vec3> prevPos = Allocator::GetElement<>(node.positions.handle, prevPosId);
         Pair<uint32_t, glm::vec3> prevRot = Allocator::GetElement<>(node.rotations.handle, prevRotId);
         Pair<uint32_t, glm::vec3> prevScale = Allocator::GetElement<>(node.scalings.handle, prevScaleId);
+
+        Transform parentTransform = GetGlobalTransform(parent);
 
         // Only add the values if they have changed since the last key-frame.
         if (prevPos.value != parentTransform.pos) {
@@ -433,7 +439,7 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
     {
         AddGlobalBonesForKeyFrame(root->mChildren[i],
                                   channels,
-                                  parentTransform,
+                                  parent,
                                   nodes,
                                   animNodeMarkers,
                                   boneNodeMarkers,
@@ -448,7 +454,7 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
 void AddGlobalBonesForFirstKeyFrame(aiNode* root,
                                     aiMesh* mesh,
                                     aiAnimation* animation,
-                                    Transform parentTransform,
+                                    aiMatrix4x4* parent,
                                     AppendArray<NodeKeyFrameValues> nodes,
                                     AppendArray<Pair<uint32_t, uint32_t>> animNodeMarkers,
                                     AppendArray<Pair<uint32_t, uint32_t>> boneNodeMarkers,
@@ -459,7 +465,7 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
 
     // A future error may reside in that if the keys for each aspect of the transform are multiple and differ
     if (nodeAnim) {
-        parentTransform = GetNodeAnimGlobalTransform(parentTransform, nodeAnim, kFirstKeyFrame);
+        GetGlobalMatrix(parent, nodeAnim, kFirstKeyFrame);
     }
 
     if (IsBone(mesh, nodeName, &boneNodeMarkers, nodeCounter)) {
@@ -469,6 +475,9 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
             { Allocator::AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
             { Allocator::AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
         };
+
+        Transform parentTransform = GetGlobalTransform(parent);
+
         node.positions = Allocator::AppendElement<>(node.positions, { kFirstKeyFrame, parentTransform.pos });
         node.rotations = Allocator::AppendElement<>(node.rotations, { kFirstKeyFrame, parentTransform.rot });
         node.scalings = Allocator::AppendElement<>(node.scalings, { kFirstKeyFrame, parentTransform.scale });
@@ -480,7 +489,7 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
         AddGlobalBonesForFirstKeyFrame(root->mChildren[i],
                                        mesh,
                                        animation,
-                                       parentTransform,
+                                       parent,
                                        nodes,
                                        animNodeMarkers,
                                        boneNodeMarkers,
@@ -489,7 +498,7 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
     }
 }
 
-Transform GetNodeAnimGlobalTransform(Transform parentTransform, const aiNodeAnim* nodeAnim, uint32_t keyFrame) {
+void GetGlobalMatrix(aiMatrix4x4* parent, const aiNodeAnim* nodeAnim, uint32_t keyFrame) {
     // Interpolate scaling and generate scaling transformation
     aiVector3D scaling;
     if (nodeAnim->mNumScalingKeys == 1) {
@@ -498,9 +507,6 @@ Transform GetNodeAnimGlobalTransform(Transform parentTransform, const aiNodeAnim
     else { // the amount is the total amount
         scaling = nodeAnim->mScalingKeys[keyFrame].mValue;
     }
-    parentTransform.scale.x *= scaling.x;
-    parentTransform.scale.y *= scaling.y;
-    parentTransform.scale.z *= scaling.z;
 
     // Interpolate rotation and generate rotation transformation matrix
     aiQuaternion rotationQ;
@@ -511,13 +517,7 @@ Transform GetNodeAnimGlobalTransform(Transform parentTransform, const aiNodeAnim
         rotationQ = nodeAnim->mRotationKeys[keyFrame].mValue;
     }
 
-    glm::quat quat = glm::quat(rotationQ.w, rotationQ.x, rotationQ.y, rotationQ.z);
-    glm::vec3 eulerAngles = glm::eulerAngles(quat);
-    parentTransform.rot.x += eulerAngles.x;
-    parentTransform.rot.y += eulerAngles.y;
-    parentTransform.rot.z += eulerAngles.z;
-
-    // Interpolate translation and generate translation transformation matrix (this is different because this assumes an exact correspondence)
+    // Interpolate translation and generate translation transformation matrix (this is different because this assumes an exact correspondence.
     aiVector3D translation;
     if (nodeAnim->mNumPositionKeys == 1) {
         translation = nodeAnim->mPositionKeys[0].mValue;
@@ -525,11 +525,35 @@ Transform GetNodeAnimGlobalTransform(Transform parentTransform, const aiNodeAnim
     else { // the amount is the total amount
         translation = nodeAnim->mPositionKeys[keyFrame].mValue;
     }
-    parentTransform.pos.x += translation.x;
-    parentTransform.pos.y += translation.y;
-    parentTransform.pos.z += translation.z;
 
-    return parentTransform;
+    // Refresh parent for next node
+    *parent *= aiMatrix4x4(scaling, rotationQ, translation);
+}
+
+Transform GetGlobalTransform(aiMatrix4x4* matrix) {
+    // Decompose to store the individual vectors since we don't want to store the global bones as matrices, since
+    // that would take up unnecessary space in memory.
+    aiVector3D scaling;
+    aiQuaternion rotationQ;
+    aiVector3D translation;
+    matrix->Decompose(scaling, rotationQ, translation);
+
+    Transform transform;
+    transform.scale.x = scaling.x;
+    transform.scale.y = scaling.y;
+    transform.scale.z = scaling.z;
+
+    glm::quat quat = glm::quat(rotationQ.w, rotationQ.x, rotationQ.y, rotationQ.z);
+    glm::vec3 eulerAngles = glm::eulerAngles(quat);
+    transform.rot.x = eulerAngles.x;
+    transform.rot.y = eulerAngles.y;
+    transform.rot.z = eulerAngles.z;
+
+    transform.pos.x = translation.x;
+    transform.pos.y = translation.y;
+    transform.pos.z = translation.z;
+
+    return transform;
 }
 
 const aiNodeAnim* FindNodeAnim(aiAnimation* animation,

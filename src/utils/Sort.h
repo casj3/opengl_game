@@ -32,9 +32,9 @@ void CountSortArrayLikePairs(ArrayHandle<Pair<uint32_t, uint32_t>> pairs,
     }
 
     // Calculate amount of numbers in range 0-9 for the given step.
-    for (uint32_t i = size - 1; i >= 0; i--) {
+    for (int32_t i = size - 1; i >= 0; i--) {
         Pair<uint32_t, uint32_t> pair = Allocator::GetElement<>(pairs, i);
-        uint32_t countId = (pair.value / 10) % kRadixCountMax;
+        uint32_t countId = (pair.value / step) % kRadixCountMax;
         Allocator::SetElement<>(pairOutput, counts[countId] - 1, pair);
 
         // Match the order of the generic elements with the sorted pairs.
