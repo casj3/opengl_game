@@ -2,6 +2,12 @@
 #include <stdint.h>
 
 namespace Array {
+
+struct BusyMarkers {
+    int32_t* rows;
+    uint32_t size;
+};
+
 /// Creates a new array.
 template<typename T>
 T* NewArray(uint32_t numElements) {
@@ -27,7 +33,7 @@ void ReplaceWithBack(T* array, uint32_t replaceIndex, uint32_t backIndex) {
 ///
 /// @param busyMarkers The collection of busy flags.
 /// @param releaseIndex The position of the bit to assign 0.
-void ReleaseBusySpot(int32_t* busyMarkers, uint32_t releaseIndex);
+void ReleaseBusySpot(BusyMarkers busyMarkers, uint32_t releaseIndex);
 
 /// Returns a resized array.
 ///
@@ -39,27 +45,19 @@ T* ResizeArray(T* array, uint32_t numElements) {
     return (T*)realloc(array, sizeof(T) * numElements);
 }
 
-/// Returns a resized busy markers array. Don't cast to anything.
-///
-/// @param busyMarkers The array of busy flags.
-/// @param numElements The number of elements to allocate space for.
-int32_t* ResizeBusyMarkers(int32_t* busyMarkers, uint32_t numElements);
-
 /// Returns a new array of bits signifying busy or not busy
 /// array indicies by being 1 or 0.
 ///
 /// @param numElements The number of elements to create a collection of
 ///                    busy markers for.
-int32_t* NewBusyMarkers(uint32_t numElements);
+BusyMarkers NewBusyMarkers(uint32_t numElements);
 
-/// Finds the first not busy index in the array by finding the first
-/// 0 bit. Its position signifies the first not busy position in the
-/// array it's corresponding against. When returning the 0 bit will
-/// switched to 1.
+/// Finds the first not busy index in the array by finding the first 0 bit. Its position
+/// signifies the first not busy position in the array it's corresponding against. When
+/// returning, the 0 bit will be switched to 1.
 ///
-/// @param busyMarkers The collection of busy bits.
-/// @param numElements The size of busy markers bits to be utilized.
+/// @param busyMarkersPtr Pointer to busy bits. Enables the function to resize the busy markers array if needed.
 ///
 /// @returns the first not busy index in the array or a larger index if no free index is found.
-unsigned long GetFreeIndex(int32_t* busyMarkers, uint32_t numElements);
+unsigned long GetFreeIndex(BusyMarkers* busyMarkersPtr);
 }

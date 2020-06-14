@@ -10,11 +10,15 @@
 #include "Input.h"
 #include "LoopManagement.h"
 #include "enums.h"
+#include "utils/Allocator.h"
+
+#define ALLOC_START_CAPACITY 10
 
 int main(int argc, char** argv)
 {
     // The display and openGL are instantiated
     InitializeDisplay(WIDTH, HEIGHT, "Data Oriented Attempt");
+    Allocator::InitAllocator(ALLOC_START_CAPACITY);
 
     // To calculate the time that passes every frame, e.g. deltaTime
     float now = SDL_GetTicks();

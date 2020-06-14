@@ -21,7 +21,24 @@ src/Shader.cpp
 src/Transform.cpp
 src/User.cpp
 src/VAO_Data.cpp
-src/main.cpp
+)
+
+SET(HEADERS
+src/Animation.h
+src/Camera.h
+src/Draw_VAO.h
+src/Input.h
+src/utils/LibraryTranslations.h
+src/LoadVAO.h
+src/LoopManagement.h
+src/utils/MathFunctions.h
+src/utils/Array.h
+src/utils/Allocator.h
+src/utils/Sort.h
+src/Shader.h
+src/Transform.h
+src/User.h
+src/VAO_Data.h
 )
 
 include_directories(
@@ -58,7 +75,7 @@ include_directories(${GLM_INCLUDE_DIR})
 include(CopyDLLs)
 
 add_executable(GameOpenGL
-${SOURCE})
+${SOURCE} ${HEADERS})
 
 set_property(TARGET GameOpenGL PROPERTY CXX_STANDARD 14)
 
@@ -69,4 +86,4 @@ GLEW_COPY_BINARIES(${CMAKE_BINARY_DIR})
 target_link_libraries(GameOpenGL ${OPENGL_LIBRARIES} ${GLEW_LIBRARIES} ${SDL2_LIBRARIES} ${ASSIMP_LIBRARY})
 
 # Copy shaders, models and textures
-add_custom_command(TARGET GameOpenGL POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/assets" "${CMAKE_BINARY_DIR}/$<CONFIG>")
+add_custom_command(TARGET GameOpenGL POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_SOURCE_DIR}/assets "${CMAKE_BINARY_DIR}/$<CONFIG>/assets")

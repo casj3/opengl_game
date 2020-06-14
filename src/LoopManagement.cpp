@@ -19,7 +19,7 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
 {
     // An importer to import ...
     Assimp::Importer importer;
-    std::string avatarPath = "./models/test.fbx";
+    std::string avatarPath = "./assets/models/Duck_Running.fbx";
     // ... a scene
     const aiScene* scene = ImportScene(&importer, avatarPath);
 

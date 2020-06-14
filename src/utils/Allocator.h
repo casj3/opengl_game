@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <glm/glm.hpp>
 
@@ -43,7 +44,7 @@ namespace Allocator {
 template<typename T>
 struct Arrays {
     T** elements;
-    int32_t* busy_flags;
+    Array::BusyMarkers busy_markers;
     uint32_t* sizes;
     // The number of allocated slots may be larger than the amount of used elements for iterating.
     uint32_t* capacities;
@@ -61,11 +62,11 @@ extern Arrays<T> arrays;
 /// @return the handle of the array, i.e. the index in the array of arrays.
 template<typename T>
 const ArrayHandle<T> AddArray(uint32_t size) {
-    uint32_t freeIndex = Array::GetFreeIndex(arrays<T>.busy_flags, arrays<T>.num_arrays);
+    uint32_t freeIndex = Array::GetFreeIndex(&arrays<T>.busy_markers);
     const ArrayHandle<T> handle = { freeIndex };
+    const uint32_t num_arrays = arrays<T>.num_arrays;
 
-    if (freeIndex >= arrays<T>.num_arrays) {
-        freeIndex = arrays<T>.num_arrays;
+    if (freeIndex >= num_arrays) {
         ResizeArrays<T>(NUM_NEW_ARRAYS);
         arrays<T>.elements[handle.id] = Array::NewArray<T>(size);
         arrays<T>.capacities[handle.id] = size;
@@ -86,7 +87,7 @@ const ArrayHandle<T> AddArray(uint32_t size) {
 /// @param handle The handle to the array.
 template<typename T>
 void RemoveArray(const ArrayHandle<T> handle) {
-    Array::ReleaseBusySpot(arrays<T>.busy_flags, handle.id);
+    Array::ReleaseBusySpot(arrays<T>.busy_markers, handle.id);
 }
 
 /// Expands the capacity of an array.
@@ -104,12 +105,16 @@ void ResizeArray(const ArrayHandle<T> handle, uint32_t elementsToAdd) {
 /// @param elementsToAdd The number of slots to expand the capacity of the array with.
 template<typename T>
 void ResizeArrays(uint32_t elementsToAdd) {
+    uint32_t firstNewElement = arrays<T>.num_arrays;
     arrays<T>.num_arrays += elementsToAdd;
 
     arrays<T>.elements = Array::ResizeArray<T*>(arrays<T>.elements, arrays<T>.num_arrays);
     arrays<T>.sizes = Array::ResizeArray<uint32_t>(arrays<T>.sizes, arrays<T>.num_arrays);
     arrays<T>.capacities = Array::ResizeArray<uint32_t>(arrays<T>.capacities, arrays<T>.num_arrays);
-    arrays<T>.busy_flags = Array::ResizeBusyMarkers(arrays<T>.busy_flags, arrays<T>.num_arrays);
+
+    // Overwrite the new elements, which hold indeterminate values, with NULL
+    // to keep track of which pointers have been assigned arrays.
+    memset(arrays<T>.elements + firstNewElement, NULL, elementsToAdd * sizeof(T*));
 }
 
 template<typename T>
@@ -125,7 +130,7 @@ template<typename T>
 T GetElement(const ArrayHandle<T> handle, uint32_t elementId) {
     return arrays<T>.elements[handle.id][elementId];
 }
-    
+
 /// Set value of an element in the array.
 ///
 /// @param handle The handle to the array.
@@ -168,10 +173,10 @@ void InitArrays(uint32_t capacity) {
     arrays<T>.elements = Array::NewArray<T*>(capacity);
     arrays<T>.sizes = Array::NewArray<uint32_t>(capacity);
     arrays<T>.capacities = Array::NewArray<uint32_t>(capacity);
-    arrays<T>.busy_flags = Array::NewBusyMarkers(capacity);
+    arrays<T>.busy_markers = Array::NewBusyMarkers(capacity);
     arrays<T>.num_arrays = capacity;
-}    
+}
 
 /// Initializes the allocator.
-void InitAllocator();
+void InitAllocator(uint32_t capacity);
 }
