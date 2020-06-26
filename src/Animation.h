@@ -23,86 +23,45 @@ enum AnimationFlags {
 
 /// Maps position values of bone to key frames.
 struct BonePositionKeys {
-    ArrayHandle<glm::vec3> position_array_id;
-    ArrayHandle<float> key_frame_array_id;
+    ArrayHandle<glm::vec3> positions;
+    ArrayHandle<float> key_frames;
 };
 
 /// Maps rotation values of a bone to key frames.
 struct BoneRotationKeys {
-    ArrayHandle<glm::vec3> rotation_array_id;
-    ArrayHandle<float> key_frame_array_id;
+    ArrayHandle<glm::vec3> rotations;
+    ArrayHandle<float> key_frames;
 };
 
 /// Maps scale values of a bone to key frames.
 struct BoneScaleKeys {
-    ArrayHandle<glm::vec3> scale_array_id;
-    ArrayHandle<float> key_frame_array_id;
+    ArrayHandle<glm::vec3> scalings;
+    ArrayHandle<float> key_frames;
 };
 
-/// Maps bone IDs (of type uint32_t) to bone BonePositionKeys.
-struct SkeletonPositions {
-    ArrayHandle<uint32_t> position_bone_array_id;
-    ArrayHandle<BonePositionKeys> bone_position_keys_id;
+struct BoneAnimation {
+    ArrayHandle<BonePositionKeys> bone_position_keys;
+    ArrayHandle<BoneRotationKeys> bone_rotation_keys;
+    ArrayHandle<BoneScaleKeys> bone_scale_keys;
+    /// Indicates what transform component keys the bone contains.
+    /// The array handle is only valid if the corresponding flag
+    /// is set.
+    AnimationFlags animation_flags;
 };
 
-/// Maps bone IDs (of type uint32_t) to BoneRotationKeys.
-struct SkeletonRotations {
-    ArrayHandle<uint32_t> rotation_bone_array_id;
-    ArrayHandle<BoneRotationKeys> bone_rotation_keys_id;
+struct Skeleton {
+    /// Iput for writing to bones.
+    ArrayHandle<BoneAnimation> bone_anims;
+    ArrayHandle<glm::mat4> bones;
+    /// Signifies the transform components animating the skeleton.
+    AnimationFlags animation_flags;
 };
 
-/// Maps bone IDs (of type uint32_t) to BoneScaleKeys.
-struct SkeletonScalings {
-    ArrayHandle<uint32_t> scale_bone_array_id;
-    ArrayHandle<BoneScaleKeys> bone_scale_keys_id;
-};
-
-/// Maps bone ID arrays, i.e. skeletons, to position arrays to see what
-/// skeletons animate in position.
-/// This structure should not be in an array.
-struct PositionSkeletons {
-    ArrayHandle<uint32_t> skeleton_array_id;
-    ArrayHandle<SkeletonRotations> skeleton_position_array_id;
-};
-
-/// Maps ID arrays, i.e. skeletons, to rotation arrays to see what
-/// skeletons animate in rotation.
-/// This structure should not be in an array.
-struct RotationSkeletons {
-    ArrayHandle<uint32_t> skeleton_array_id;
-    ArrayHandle<SkeletonRotations> skeleton_rotation_array_id;
-};
-
-/// Maps ID arrays, i.e. skeletons, to scale arrays to see what
-/// skeletons animate in scale.
-/// This structure should not be in an array.
-struct ScaleSkeletons {
-    ArrayHandle<uint32_t> skeleton_array_id;
-    ArrayHandle<SkeletonScalings> skeleton_scale_array_id;
-};
-
-/// Maps skeletons (bone IDs (of type uint32_t)) to vertex array objects.
-/// This structure should not be in an array. There should only exist one
-/// instance of this structure in the program.
+/// Maps skeletons to vertex array objects. This structure should not be in an array.
+/// There should only exist one instance of this structure in the application.
 struct Skeletons {
-    ArrayHandle<uint32_t> skeleton_array_id;
-    
-    ArrayHandle<glm::vec3> default_position_array_id;
-    ArrayHandle<glm::vec3> default_rotation_array_id;
-    ArrayHandle<glm::vec3> default_scale_array_id;
-
+    ArrayHandle<Skeleton> skeletons;
     ArrayHandle<uint32_t> vao_array_id;
-
-    /// Includes flags from enum SkeletonArrays or is 0.
-    /// Each flag indicates which skeletons (position, rotation or scale)
-    /// the skeleton with the corresponding bone_array_id belongs to, which
-    /// could be all of them. In other words, its amount is always the same
-    /// as the array references by the bone_array_id.
-    ArrayHandle<int32_t> array_types_flag;
-
-    PositionSkeletons positionSkeletons;
-    RotationSkeletons rotationSkeletons;
-    ScaleSkeletons scaleSkeletons;
 };
 
 /* TODO: Rewrite the functions below to work with the new structures. */

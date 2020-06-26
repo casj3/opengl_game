@@ -9,10 +9,10 @@ namespace Allocator {
 void InitAllocator(uint32_t capacity) {
     InitArrays<float>(capacity);
     InitArrays<glm::vec3>(capacity);
+    InitArrays<glm::mat4>(capacity); 
     InitArrays<uint32_t>(capacity);
-    InitArrays<SkeletonPositions>(capacity);
-    InitArrays<SkeletonRotations>(capacity);
-    InitArrays<SkeletonScalings>(capacity);
+    InitArrays<Skeleton>(capacity);
+    InitArrays<BoneAnimation>(capacity);
     InitArrays<BonePositionKeys>(capacity);
     InitArrays<BoneRotationKeys>(capacity);
     InitArrays<BoneScaleKeys>(capacity);
