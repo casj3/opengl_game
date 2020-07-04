@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include <LoadVAO.h>
 #include "Allocator.h"
 
@@ -21,8 +23,7 @@ void CountSortArrayLikePairs(ArrayHandle<Pair<uint32_t, uint32_t>> pairs,
     // Calculate amount of numbers in range 0-9 for the given step. The total amount
     // can not be more than the size of the array.
     for (uint32_t i = 0; i < size; i++) {
-        Pair<uint32_t, uint32_t> pair = Allocator::GetElement<>(pairs, i);
-        counts[(pair.value / step) % kRadixCountMax]++;
+        counts[(pairs[i].value / step) % kRadixCountMax]++;
     }
 
     // Calculate cummulative amount to let the elements reflect the order based
@@ -33,24 +34,19 @@ void CountSortArrayLikePairs(ArrayHandle<Pair<uint32_t, uint32_t>> pairs,
 
     // Calculate amount of numbers in range 0-9 for the given step.
     for (int32_t i = size - 1; i >= 0; i--) {
-        Pair<uint32_t, uint32_t> pair = Allocator::GetElement<>(pairs, i);
-        uint32_t countId = (pair.value / step) % kRadixCountMax;
-        Allocator::SetElement<>(pairOutput, counts[countId] - 1, pair);
+        uint32_t countId = (pairs[i].value / step) % kRadixCountMax;
+        pairOutput[counts[countId] - 1] = pairs[i];
 
         // Match the order of the generic elements with the sorted pairs.
-        T element = Allocator::GetElement<>(array, i);
-        Allocator::SetElement<>(arrayOutput, counts[countId] - 1, element);
+        arrayOutput[counts[countId] - 1] = array[i];
 
         // Decrement the count to place the next corresponding element at a lower position in the array.
         counts[countId]--;
     }
 
     for (uint32_t i = 0; i < size; i++) {
-        Pair<uint32_t, uint32_t> outputPair = Allocator::GetElement<>(pairOutput, i);
-        T outputElement = Allocator::GetElement<>(arrayOutput, i);
-
-        Allocator::SetElement<>(pairs, i, outputPair);
-        Allocator::SetElement<>(array, i, outputElement);
+        pairs[i] = pairOutput[i];
+        array[i] = arrayOutput[i];
     }
 
     Allocator::RemoveArray<>(pairOutput);
