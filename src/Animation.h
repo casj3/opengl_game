@@ -16,37 +16,26 @@ struct SkeletonSuper
 };
 
 enum AnimationFlags {
-    POSITION = 0 << 1,
-    ROTATION = 0 << 2,
-    SCALE = 0 << 3,
+    NONE = 0,
+    POSITION = 1,
+    ROTATION = 1 << 1,
+    SCALE = 1 << 2,
 };
 
-/// Maps position values of bone to key frames.
-struct BonePositionKeys {
-    ArrayHandle<glm::vec3> positions;
-    ArrayHandle<float> key_frames;
-};
-
-/// Maps rotation values of a bone to key frames.
-struct BoneRotationKeys {
-    ArrayHandle<glm::vec3> rotations;
-    ArrayHandle<float> key_frames;
-};
-
-/// Maps scale values of a bone to key frames.
-struct BoneScaleKeys {
-    ArrayHandle<glm::vec3> scalings;
+/// Maps values of a bone animation component, e.g. scale, to key frames.
+struct BoneAnimKeys {
+    ArrayHandle<glm::vec3> values;
     ArrayHandle<float> key_frames;
 };
 
 struct BoneAnimation {
-    ArrayHandle<BonePositionKeys> bone_position_keys;
-    ArrayHandle<BoneRotationKeys> bone_rotation_keys;
-    ArrayHandle<BoneScaleKeys> bone_scale_keys;
+    BoneAnimKeys bone_position_keys;
+    BoneAnimKeys bone_rotation_keys;
+    BoneAnimKeys bone_scale_keys;
     /// Indicates what transform component keys the bone contains.
     /// The array handle is only valid if the corresponding flag
     /// is set.
-    AnimationFlags animation_flags;
+    int32_t animation_flags;
 };
 
 struct Skeleton {
@@ -54,7 +43,7 @@ struct Skeleton {
     ArrayHandle<BoneAnimation> bone_anims;
     ArrayHandle<glm::mat4> bones;
     /// Signifies the transform components animating the skeleton.
-    AnimationFlags animation_flags;
+    int32_t animation_flags;
 };
 
 /// Maps skeletons to vertex array objects. This structure should not be in an array.
@@ -72,3 +61,13 @@ void SetAnimationBones(float animationTime, SkeletonSuper* animSuper);
 
 // The key_bone_frames mustn't be deallocated because it is a std::vector
 void DestroySkeleton(glm::mat4* animaitonBoneTransforms);
+
+/// Generats an integer that can be compared against the AnimationFlags to
+/// determine if position, rotation or scale has been set.
+///
+/// @param position Condition for the position flag.
+/// @param position Condition for the rotation flag.
+/// @param position Condition for the scale flag.
+///
+/// @returns An integer holding flags defined by the AnimationFlags enum.
+int32_t GetAnimationFlags(bool position, bool rotation, bool scale);

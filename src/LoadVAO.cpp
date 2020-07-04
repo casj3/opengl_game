@@ -26,6 +26,22 @@ struct NodeMarkers {
     ArrayHandle<Pair<uint32_t, uint32_t>> bone;
 };
 
+void AddAnimationKeys(BoneAnimKeys* outAnimKeys,
+                      AppendArray<Pair<uint32_t, glm::vec3>> animComponent,
+                      float keyFrameTime) {
+    BoneAnimKeys animKeys = {
+        Allocator::AddArray<glm::vec3>(animComponent.counter),
+        Allocator::AddArray<float>(animComponent.counter),
+    };
+
+    for (uint32_t i = 0; i < animComponent.counter; i++) {
+        animKeys.key_frames[i] = animComponent.handle[i].key * keyFrameTime;
+        animKeys.values[i] = animComponent.handle[i].value;
+    }
+
+    *outAnimKeys = animKeys;
+}
+
 // Helper functions internal to the file
 void RemoveNodeKeyFrameValues(ArrayHandle<NodeKeyFrameValues> nodes) {
     uint32_t arraySize = Allocator::GetArraySize<>(nodes);
@@ -37,6 +53,8 @@ void RemoveNodeKeyFrameValues(ArrayHandle<NodeKeyFrameValues> nodes) {
     }
     Allocator::RemoveArray<>(nodes);
 }
+
+void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, BoneAnimation* boneAnimation, float keyFrameTime);
 
 ArrayHandle<NodeKeyFrameValues> ImportGlobalBonesThroughTime(ArrayHandle<NodeKeyFrameValues> boneNodes,
                                                              uint32_t numKeyFrames,
@@ -308,13 +326,22 @@ ArrayHandle<SkeletalVertex> LoadSkeletalVertices(const aiScene* scene,
 
     nodes = ImportGlobalBonesThroughTime(nodes, numKeyFrames, scene->mRootNode, { mesh, scene->mAnimations[0] });
 
+    float animationSeconds = (float) (scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
+    float secondsPerKeyFrame = animationSeconds / numKeyFrames;
+
+    ArrayHandle<BoneAnimation> boneAnims = Allocator::AddArray<BoneAnimation>(mesh->mNumBones);
+    ArrayHandle<glm::mat4> bones = Allocator::AddArray<glm::mat4>(mesh->mNumBones);
+    int32_t skeletonAnimationFlags = AnimationFlags::NONE;
     for (uint32_t i = 0; i < mesh->mNumBones; i++) {
-        std::string boneName(mesh->mBones[i]->mName.data);
+        glm::mat4 bone;
+        BoneAnimation boneAnimation;
+        GetBoneAnimation(nodes[i], &bone, &boneAnimation, secondsPerKeyFrame);
+        bones[i] = bone;
+        boneAnims[i] = boneAnimation;
+        skeletonAnimationFlags |= boneAnimation.animation_flags;
 
-        NodeKeyFrameValues node = Allocator::GetElement<>(nodes, i);
-
-        for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; j++)
-        {
+        // TODO: Update the skeletonAnimationFlags here with the boneAnimationFlags.
+        for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; j++) {
             uint32_t vertex_ID = mesh->mBones[i]->mWeights[j].mVertexId;
             float weight = mesh->mBones[i]->mWeights[j].mWeight;
 
@@ -333,11 +360,33 @@ ArrayHandle<SkeletalVertex> LoadSkeletalVertices(const aiScene* scene,
             }
         }
     }
+    Skeleton skeleton = { boneAnims, bones, skeletonAnimationFlags };
 
     // Remove what will not be needed outside of the function scope.
     RemoveNodeKeyFrameValues(nodes);
 
     return vertices;
+}
+
+void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, BoneAnimation* boneAnimation, float keyFrameTime) {
+    bool animatePos = node.positions.counter > 1;
+    bool animateRot = node.rotations.counter > 1;
+    bool animateScale = node.scalings.counter > 1;
+
+    boneAnimation->animation_flags = GetAnimationFlags(animatePos, animateRot, animateScale);
+
+    // Stub out the initialization calls for the unwanted animation components.
+    void (*addBoneAnimFunctions[true + 1])(BoneAnimKeys*, AppendArray<Pair<uint32_t, glm::vec3>>, float);
+
+    // The animation flags should dictate what should be used, so the stubbed return value shouldn't matter.
+    addBoneAnimFunctions[false] = [](BoneAnimKeys*, AppendArray<Pair<uint32_t, glm::vec3>>, float) {};
+    addBoneAnimFunctions[true] = &AddAnimationKeys;
+
+    addBoneAnimFunctions[animatePos](&boneAnimation->bone_position_keys, node.positions, keyFrameTime);
+    addBoneAnimFunctions[animateRot](&boneAnimation->bone_rotation_keys, node.rotations, keyFrameTime);
+    addBoneAnimFunctions[animateScale](&boneAnimation->bone_scale_keys, node.scalings, keyFrameTime);
+
+    *bone = GetTransform(node.positions.handle[0].value, node.rotations.handle[0].value, node.scalings.handle[0].value);
 }
 
 /// Traverses skeleton and calculates the global positions of the bones per key frame.
@@ -413,12 +462,24 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
 
         // Only add the values if they have changed since the last key-frame.
         if (prevPos.value != parentTransform.pos) {
+            // If there has been more than one key-frame in between the differing values, an extra key-frame
+            // has to be added such that the interpolation occurs between the last key-frame differing from
+            // the new one being added.
+            if (keyFrame - prevPos.key > 1) {
+                node.positions = Allocator::AppendElement<>(node.positions, prevPos);
+            }
             node.positions = Allocator::AppendElement<>(node.positions, { keyFrame, parentTransform.pos });
         }
         if (prevRot.value != parentTransform.rot) {
+            if (keyFrame - prevRot.key > 1) {
+                node.positions = Allocator::AppendElement<>(node.rotations, prevRot);
+            }
             node.rotations = Allocator::AppendElement<>(node.rotations, { keyFrame, parentTransform.rot });
         }
         if (prevScale.value != parentTransform.scale) {
+            if (keyFrame - prevScale.key > 1) {
+                node.positions = Allocator::AppendElement<>(node.scalings, prevScale);
+            }
             node.scalings = Allocator::AppendElement<>(node.scalings, { keyFrame, parentTransform.scale });
         }
 
@@ -499,30 +560,27 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
 }
 
 void UpdateParentMatrix(aiMatrix4x4* parent, const aiNodeAnim* nodeAnim, uint32_t keyFrame) {
-    // Interpolate scaling and generate scaling transformation
     aiVector3D scaling;
     if (nodeAnim->mNumScalingKeys == 1) {
         scaling = nodeAnim->mScalingKeys[0].mValue;
     }
-    else { // the amount is the total amount
+    else {
         scaling = nodeAnim->mScalingKeys[keyFrame].mValue;
     }
 
-    // Interpolate rotation and generate rotation transformation matrix
     aiQuaternion rotationQ;
     if (nodeAnim->mNumRotationKeys == 1) {
         rotationQ = nodeAnim->mRotationKeys[0].mValue;
     }
-    else { // the amount is the total amount
+    else {
         rotationQ = nodeAnim->mRotationKeys[keyFrame].mValue;
     }
 
-    // Interpolate translation and generate translation transformation matrix (this is different because this assumes an exact correspondence.
     aiVector3D translation;
     if (nodeAnim->mNumPositionKeys == 1) {
         translation = nodeAnim->mPositionKeys[0].mValue;
     }
-    else { // the amount is the total amount
+    else {
         translation = nodeAnim->mPositionKeys[keyFrame].mValue;
     }
 

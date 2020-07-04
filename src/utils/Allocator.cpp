@@ -13,9 +13,6 @@ void InitAllocator(uint32_t capacity) {
     InitArrays<uint32_t>(capacity);
     InitArrays<Skeleton>(capacity);
     InitArrays<BoneAnimation>(capacity);
-    InitArrays<BonePositionKeys>(capacity);
-    InitArrays<BoneRotationKeys>(capacity);
-    InitArrays<BoneScaleKeys>(capacity);
     InitArrays<SkeletalVertex>(capacity);
     InitArrays<NodeKeyFrameValues>(capacity);
     InitArrays<Pair<uint32_t, uint32_t>>(capacity);

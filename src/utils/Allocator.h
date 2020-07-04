@@ -14,6 +14,11 @@
 template<typename T>
 struct ArrayHandle {
     uint32_t id;
+
+    /// Retrieves a reference to the element with elementId.
+    T& operator[](uint32_t elementId) {
+        return Allocator::arrays<T>.elements[id][elementId];
+    }
 };
 
 template<typename T>

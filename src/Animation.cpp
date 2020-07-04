@@ -42,3 +42,11 @@ void DestroySkeleton(glm::mat4* animaitonBoneTransforms)
 {
     free(animaitonBoneTransforms);
 }
+
+int32_t GetAnimationFlags(bool position, bool rotation, bool scale) {
+    int32_t animationFlags = 0;
+    animationFlags |= (position & 1);
+    animationFlags |= (rotation & 1) << 1;
+    animationFlags |= (scale & 1) << 2;
+    return animationFlags;
+}

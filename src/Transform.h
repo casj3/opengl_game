@@ -10,3 +10,4 @@ struct Transform
 };
 
 glm::mat4 TransformMatrix(Transform transform);
+glm::mat4 GetTransform(glm::vec3 pos, glm::vec3 rot, glm::vec3 scale);
