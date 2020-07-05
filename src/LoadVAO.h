@@ -27,8 +27,15 @@ struct NodeKeyFrameValues {
 const aiScene* ImportScene(Assimp::Importer* importer, std::string path);
 
 std::vector<DefaultVertex> LoadVertices(aiMesh* mesh);
-ArrayHandle<SkeletalVertex> LoadSkeletalVertices(const aiScene* scene, uint32_t* skeleton_id);
-std::vector<unsigned int> LoadIndices(aiMesh* mesh);
+
+/// Loads a skeleton from a scene. Assumes a scene to skeleton correspondence, i.e. one skeleton per scene.
+///
+/// @param[in] scene  Holds the skeleton data to load.
+/// @param[out] outVerticies  Is assigned the handle to the skeleton vertex data.
+///
+/// @returns the skeleton.
+Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVertices);
+std::vector<uint32_t> LoadIndices(aiMesh* mesh);
 
 Textures LoadTextures(aiMesh* mesh, const aiScene* scene, std::string path, Textures texturesLoaded);
 Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::string directory, Textures texturesLoaded);
@@ -36,5 +43,5 @@ Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string t
 Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, std::string path);
 Textures LoadMeshMaterialTextures(aiMaterial *mat, aiTextureType type, std::string typeName, std::string directory);
 
-unsigned int TextureFromFile(std::string fileName, std::string directory);
+uint32_t TextureFromFile(std::string fileName, std::string directory);
 void DestroyTextures(Textures texturesLoaded);

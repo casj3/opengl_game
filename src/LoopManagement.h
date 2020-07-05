@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdint.h>
+
 #include "User.h"
 #include "Draw_VAO.h"
 #include "Shader.h"
@@ -16,6 +18,6 @@ void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform use
 
 void SetUserGraphicsDataOrtho(ProgramSuper graphicsData, OrthoCamera camera, Transform userTransform, SkeletonSuper bones);
 
-void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, unsigned int program);
+void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, uint32_t program);
 
 void SubInitializeUser(UserSuper* user);

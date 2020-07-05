@@ -9,16 +9,16 @@
 #include "utils/Allocator.h"
 
 // These macros are only valid for a normal map skeletal vertex
-#define POSITION_LOCATION			  0
-#define NORMAL_LOCATION				  1
-#define TEX_COORD_LOCATION			2
-#define BONE_ID_LOCATION			  3
-#define BONE_WEIGHT_LOCATION		4
+#define POSITION_LOCATION 0
+#define NORMAL_LOCATION 1
+#define TEX_COORD_LOCATION 2
+#define BONE_ID_LOCATION 3
+#define BONE_WEIGHT_LOCATION 4
 
-#define TANGENT_LOCATION_NMS		  3
-#define BINORMAL_LOCATION_NMS		  4
-#define BONE_ID_LOCATION_NMS		  5
-#define BONE_WEIGHT_LOCATION_NMS	6
+#define TANGENT_LOCATION_NMS 3
+#define BINORMAL_LOCATION_NMS 4
+#define BONE_ID_LOCATION_NMS 5
+#define BONE_WEIGHT_LOCATION_NMS 6
 
 struct PhongMaterial
 {
@@ -33,14 +33,14 @@ struct PhongMaterial
 
 struct Texture
 {
-    unsigned int id;
+    uint32_t id;
     std::string type;
     aiString path;
 };
 
 struct Textures
 {
-    std::vector<unsigned int> id;
+    std::vector<uint32_t> id;
     std::vector<std::string> types;
     std::vector<aiString> path;
 };
@@ -68,10 +68,10 @@ struct SkeletalVertex
     glm::vec3 normal;
     glm::vec2 tex_coords;
 
-    unsigned int IDs[NUM_BONES_PER_VERTEX];
+    uint32_t IDs[NUM_BONES_PER_VERTEX];
     float weights[NUM_BONES_PER_VERTEX];
 };
 
-void SetupDefaultVAO(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, std::vector<DefaultVertex> vertices, std::vector<unsigned int> indices);
-void SetupSkeletalVAO(unsigned int* VAO, unsigned int* VBO, unsigned int* EBO, std::vector<SkeletalVertex> vertices, std::vector<unsigned int> indices);
-void DestroyVAO(unsigned int* VAO);
+void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<DefaultVertex> vertices, std::vector<uint32_t> indices);
+void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<SkeletalVertex> vertices, std::vector<uint32_t> indices);
+void DestroyVAO(uint32_t* VAO);

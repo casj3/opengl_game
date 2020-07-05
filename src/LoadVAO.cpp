@@ -272,8 +272,7 @@ void DestroyTextures(Textures textures)
 }
 
 // TODO: Add documentation for clarifying that this function depends on scene to mesh correspondence.
-ArrayHandle<SkeletalVertex> LoadSkeletalVertices(const aiScene* scene,
-                                                 uint32_t* skeletonId) {
+Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVertices) {
     aiMesh* mesh = scene->mMeshes[0];
     ArrayHandle<SkeletalVertex> vertices = Allocator::AddArray<SkeletalVertex>(mesh->mNumVertices);
 
@@ -354,12 +353,12 @@ ArrayHandle<SkeletalVertex> LoadSkeletalVertices(const aiScene* scene,
             }
         }
     }
-    Skeleton skeleton = { boneAnims, bones, skeletonAnimationFlags };
-
     // Remove what will not be needed outside of the function scope.
     RemoveNodeKeyFrameValues(nodes);
 
-    return vertices;
+    *outVertices = vertices;
+    Skeleton skeleton = { boneAnims, bones, skeletonAnimationFlags };
+    return skeleton;
 }
 
 void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, BoneAnimation* boneAnimation, float keyFrameTime) {

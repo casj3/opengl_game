@@ -71,6 +71,8 @@ const ArrayHandle<T> AddArray(uint32_t size) {
     const ArrayHandle<T> handle = { freeIndex };
     const uint32_t num_arrays = arrays<T>.num_arrays;
 
+    // TODO: Add function for finding non-busy arrays without too big size discrepancies.
+
     if (freeIndex >= num_arrays) {
         ResizeArrays<T>(NUM_NEW_ARRAYS);
         arrays<T>.elements[handle.id] = Array::NewArray<T>(size);

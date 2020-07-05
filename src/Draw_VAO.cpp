@@ -5,139 +5,139 @@
 
 #include <GL/glew.h>
 
-void DrawTexturedVAO(unsigned int program, unsigned int VAO, Textures textures, unsigned int indicesSize)
+void DrawTexturedVAO(uint32_t program, uint32_t VAO, Textures textures, uint32_t indicesSize)
 {
-	// Bind appropriate textures
-	// 2019-07-27:
-  // This needs to be revised, maybe simplified. I don't know what's going on with
-  // all sstream crap here.
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
-	unsigned int normalNr = 1;
+    // Bind appropriate textures
+    // 2019-07-27:
+    // This needs to be revised, maybe simplified. I don't know what's going on with
+    // all sstream crap here.
+    uint32_t diffuseNr = 1;
+    uint32_t specularNr = 1;
+    uint32_t normalNr = 1;
 
-	for (unsigned int i = 0; i < textures.id.size(); i++)
-	{
-		// Retrieve texture number (the N in diffuse_textureN)
-		std::stringstream ss;
-		std::string number;
-		std::string name = textures.types[i];
+    for (uint32_t i = 0; i < textures.id.size(); i++)
+    {
+        // Retrieve texture number (the N in diffuse_textureN)
+        std::stringstream ss;
+        std::string number;
+        std::string name = textures.types[i];
 
-		if (name == "diffuseSamp")
-		{
-			ss << diffuseNr++; // Transfer unsigned int to stream
+        if (name == "diffuseSamp")
+        {
+            ss << diffuseNr++; // Transfer uint32_t to stream
 
-			number = ss.str();
-		}
-		else if (name == "specularSamp")
-		{
-			ss << specularNr++; // Transfer unsigned int to stream
+            number = ss.str();
+        }
+        else if (name == "specularSamp")
+        {
+            ss << specularNr++; // Transfer uint32_t to stream
 
-			number = ss.str();
-		}
-		else if (name == "normalSamp")
-		{
-			ss << normalNr++; // Transfer unsigned int to stream
+            number = ss.str();
+        }
+        else if (name == "normalSamp")
+        {
+            ss << normalNr++; // Transfer uint32_t to stream
 
-			number = ss.str();
-		}
+            number = ss.str();
+        }
 
-		// Now set the sampler to the correct texture unit
-		glUniform1i(glGetUniformLocation(program, (name + number).c_str()), i);
+        // Now set the sampler to the correct texture unit
+        glUniform1i(glGetUniformLocation(program, (name + number).c_str()), i);
 
-		// Active proper texture unit before binding
-		glActiveTexture(GL_TEXTURE0 + i);
+        // Active proper texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + i);
 
-		// And finally bind the texture
-		glBindTexture(GL_TEXTURE_2D, textures.id[i]);
-	}
+        // And finally bind the texture
+        glBindTexture(GL_TEXTURE_2D, textures.id[i]);
+    }
 
-	// Draw mesh
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+    // Draw mesh
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 
-	// Always good practice to set everything back to defaults once configured.
-	for (unsigned int i = 0; i < textures.id.size(); i++)
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
+    // Always good practice to set everything back to defaults once configured.
+    for (uint32_t i = 0; i < textures.id.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 }
 
-void DrawTexturedPhongVAO(unsigned int program, unsigned int VAO, Textures textures, unsigned int indicesSize, PhongMaterial material)
+void DrawTexturedPhongVAO(uint32_t program, uint32_t VAO, Textures textures, uint32_t indicesSize, PhongMaterial material)
 {
-	// Bind appropriate textures
-	unsigned int diffuseNr = 1;
-	unsigned int specularNr = 1;
-	unsigned int normalNr = 1;
+    // Bind appropriate textures
+    uint32_t diffuseNr = 1;
+    uint32_t specularNr = 1;
+    uint32_t normalNr = 1;
 
-	for (unsigned int i = 0; i < textures.id.size(); i++)
-	{
-		// Retrieve texture number (the N in diffuse_textureN)
-		std::stringstream ss;
-		std::string number;
-		std::string name = textures.types[i];
+    for (uint32_t i = 0; i < textures.id.size(); i++)
+    {
+        // Retrieve texture number (the N in diffuse_textureN)
+        std::stringstream ss;
+        std::string number;
+        std::string name = textures.types[i];
 
-		if (name == "diffuseSamp")
-		{
-			ss << diffuseNr++; // Transfer unsigned int to stream
+        if (name == "diffuseSamp")
+        {
+            ss << diffuseNr++; // Transfer uint32_t to stream
 
-			number = ss.str();
-		}
-		else if (name == "specularSamp")
-		{
-			ss << specularNr++; // Transfer unsigned int to stream
+            number = ss.str();
+        }
+        else if (name == "specularSamp")
+        {
+            ss << specularNr++; // Transfer uint32_t to stream
 
-			number = ss.str();
-		}
-		else if (name == "normalSamp")
-		{
-			ss << normalNr++; // Transfer unsigned int to stream
+            number = ss.str();
+        }
+        else if (name == "normalSamp")
+        {
+            ss << normalNr++; // Transfer uint32_t to stream
 
-			number = ss.str();
-		}
+            number = ss.str();
+        }
 
-		// Now set the sampler to the correct texture unit
-		glUniform1i(glGetUniformLocation(program, (name + number).c_str()), i);
+        // Now set the sampler to the correct texture unit
+        glUniform1i(glGetUniformLocation(program, (name + number).c_str()), i);
 
-		// Active proper texture unit before binding
-		glActiveTexture(GL_TEXTURE0 + i);
+        // Active proper texture unit before binding
+        glActiveTexture(GL_TEXTURE0 + i);
 
-		// And finally bind the texture
-		glBindTexture(GL_TEXTURE_2D, textures.id[i]);
-	}
+        // And finally bind the texture
+        glBindTexture(GL_TEXTURE_2D, textures.id[i]);
+    }
 
-	// Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
-	glUniform1f(glGetUniformLocation(program, "material.shininess"), material.shininess);
+    // Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
+    glUniform1f(glGetUniformLocation(program, "material.shininess"), material.shininess);
 
-	glUniform3fv(glGetUniformLocation(program, "material.ka"), 1, material.ka);
-	glUniform3fv(glGetUniformLocation(program, "material.kd"), 1, material.kd);
-	glUniform3fv(glGetUniformLocation(program, "material.ks"), 1, material.ks);
+    glUniform3fv(glGetUniformLocation(program, "material.ka"), 1, material.ka);
+    glUniform3fv(glGetUniformLocation(program, "material.kd"), 1, material.kd);
+    glUniform3fv(glGetUniformLocation(program, "material.ks"), 1, material.ks);
 
-	// Draw mesh
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+    // Draw mesh
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 
-	// Always good practice to set everything back to defaults once configured.
-	for (unsigned int i = 0; i < textures.id.size(); i++)
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
+    // Always good practice to set everything back to defaults once configured.
+    for (uint32_t i = 0; i < textures.id.size(); i++)
+    {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
 }
 
-void DrawPhongVAO(unsigned int program, unsigned int VAO, unsigned int indicesSize, PhongMaterial material)
+void DrawPhongVAO(uint32_t program, uint32_t VAO, uint32_t indicesSize, PhongMaterial material)
 {
-	// Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
-	glUniform1f(glGetUniformLocation(program, "material.shininess"), material.shininess);
+    // Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
+    glUniform1f(glGetUniformLocation(program, "material.shininess"), material.shininess);
 
-	glUniform3fv(glGetUniformLocation(program, "material.ka"), 1, material.ka);
-	glUniform3fv(glGetUniformLocation(program, "material.kd"), 1, material.kd);
-	glUniform3fv(glGetUniformLocation(program, "material.ks"), 1, material.ks);
+    glUniform3fv(glGetUniformLocation(program, "material.ka"), 1, material.ka);
+    glUniform3fv(glGetUniformLocation(program, "material.kd"), 1, material.kd);
+    glUniform3fv(glGetUniformLocation(program, "material.ks"), 1, material.ks);
 
-	// Draw mesh
-	glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
-	glBindVertexArray(0);
+    // Draw mesh
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, 0);
+    glBindVertexArray(0);
 }

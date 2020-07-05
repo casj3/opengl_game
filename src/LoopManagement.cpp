@@ -24,13 +24,13 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
     const aiScene* scene = ImportScene(&importer, avatarPath);
 
     // All the vertices and indices to create a VAO'
-    uint32_t skeleton_id;
-    ArrayHandle<SkeletalVertex> skeletalVertices = LoadSkeletalVertices(scene, &skeleton_id);
-    std::vector<unsigned int> indices = LoadIndices(scene->mMeshes[0]);
+    ArrayHandle<SkeletalVertex> skeletalVertices;
+    Skeleton skeleton = LoadSkeleton(scene, &skeletalVertices);
+    std::vector<uint32_t> indices = LoadIndices(scene->mMeshes[0]);
 
     // At the moment I don't think I need to store the data of the VBO and EBO,
     // which may turn out to be a grave error
-    unsigned int VAO, VBO, EBO;
+    uint32_t VAO, VBO, EBO;
     // SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletalVertices, indices);
     Textures textures = LoadMeshTextures(scene->mMeshes[0], scene, avatarPath);
 
@@ -152,7 +152,7 @@ void SetUserGraphicsDataOrtho(ProgramSuper graphicsData,
     UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
 }
 
-void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, unsigned int program)
+void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, uint32_t program)
 {
     // We choose an arbitrary phong material for the avatar draw unit
 
@@ -167,7 +167,7 @@ void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, unsigned int pr
     // We draw the avatar without the texture to test the validity of the shaders. OBS! This function is clearly not
     // finished for the sake of scalability.
 
-    for (unsigned int i = 0; i < skeletalDrawUnits->vertex_array_objects.size(); i++)
+    for (uint32_t i = 0; i < skeletalDrawUnits->vertex_array_objects.size(); i++)
     {
         DrawPhongVAO(program, skeletalDrawUnits->vertex_array_objects[i], skeletalDrawUnits->indices_size[i], avatarPhong);
     }
