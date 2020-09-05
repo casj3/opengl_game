@@ -5,16 +5,13 @@
 void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<DefaultVertex> vertices, std::vector<uint32_t> indices)
 {
     // Create buffers/arrays
-    glGenVertexArrays(1, &*VAO);
-    glGenBuffers(1, &*VBO);
-    glGenBuffers(1, &*EBO);
+    glGenVertexArrays(1, VAO);
+    glGenBuffers(1, VBO);
+    glGenBuffers(1, EBO);
 
     glBindVertexArray(*VAO);
     // Load data into vertex buffers
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    // A great thing about structs is that their memory layout is sequential for all its items.
-    // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-    // again translates to 3/2 floats which translates to a byte array.
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(DefaultVertex), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
@@ -34,20 +31,18 @@ void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<De
     glBindVertexArray(0);
 }
 
-void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<SkeletalVertex> vertices, std::vector<uint32_t> indices)
+// TODO: Revise to see if the vbo and ebo parameters are necessary.
+void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ArrayHandle<SkeletalVertex> vertices, std::vector<uint32_t> indices)
 {
     // Create buffers/arrays
-    glGenVertexArrays(1, &*VAO);
-    glGenBuffers(1, &*VBO);
-    glGenBuffers(1, &*EBO);
+    glGenVertexArrays(1, VAO);
+    glGenBuffers(1, VBO);
+    glGenBuffers(1, EBO);
 
     glBindVertexArray(*VAO);
     // Load data into vertex buffers
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    // A great thing about structs is that their memory layout is sequential for all its items.
-    // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-    // again translates to 3/2 floats which translates to a byte array.
-    glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(SkeletalVertex), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, GetArraySize<>(vertices) * sizeof(SkeletalVertex), &vertices[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);
@@ -75,5 +70,5 @@ void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<S
 
 void DestroyVAO(uint32_t* VAO)
 {
-    glDeleteVertexArrays(1, &*VAO);
+    glDeleteVertexArrays(1, VAO);
 }

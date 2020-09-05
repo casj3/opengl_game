@@ -53,6 +53,7 @@ union Uniforms
     DefaultUniforms defaultUniforms;
 };
 
+// TODO: Remove the union use everywhere. It's unnecessarily confusing and weird.
 // The superstructure is used to group arguments meant for a specific module - in this case the shader/program one
 struct ProgramSuper
 {
@@ -69,7 +70,7 @@ void Bind(uint32_t program);
 void DestroyDefaultProgram(DefaultProgram program);
 
 void UpdateUniforms(glm::mat4 world, glm::mat4 view, glm::mat4 perspective, DefaultUniforms uniforms);
-void UpdateSkinningUniforms(glm::mat4 world, Camera camera, SkeletonSuper skeleton, SkinningUniforms uniforms);
-void UpdateSkinningUniformsOrtho(glm::mat4 world, OrthoCamera camera, SkeletonSuper skeleton, SkinningUniforms uniforms);
+void UpdateSkinningUniforms(glm::mat4 world, Camera camera, Skeleton skeleton, SkinningUniforms uniforms);
+void UpdateSkinningUniformsOrtho(glm::mat4 world, OrthoCamera camera, Skeleton skeleton, SkinningUniforms uniforms);
 void UpdateWorldMatrix(glm::mat4 world, uint32_t world_matrix_uniform);
 void UpdateCameraLightBuffer(glm::vec3 lightPos, glm::vec3 cameraPos, uint32_t program);

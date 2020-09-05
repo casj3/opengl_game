@@ -12,13 +12,13 @@
 #include "enums.h"
 #include "utils/ArrayManager.h"
 
-#define ALLOC_START_CAPACITY 10
+#define START_CAPACITY 10
 
 int main(int argc, char** argv)
 {
     // The display and openGL are instantiated
     InitializeDisplay(WIDTH, HEIGHT, "Data Oriented Attempt");
-    InitArrayManager(ALLOC_START_CAPACITY);
+    InitArrayManager(START_CAPACITY);
 
     // To calculate the time that passes every frame, e.g. deltaTime
     float now = SDL_GetTicks();
@@ -29,7 +29,7 @@ int main(int argc, char** argv)
     OrthoCamera camera;
 
     // Containers of program data used to create programs constituted of shaders
-    ProgramSuper programs[num_programs];
+    ProgramSuper programs[ProgramTypes::num_programs];
 
     // Draw units are grouped by their use of a certain draw function and there are different kind of draw
     //units depending on the materials and textures they use. This one uses textures.
@@ -39,7 +39,10 @@ int main(int argc, char** argv)
     UserSuper user;
     user.animation_timer = 0;
 
-    struct Skeletons skeletons;
+    ArrayHandle<Skeleton> skeletonArray = AddArray<Skeleton>(SkeletonTypes::num_skeletons);
+    ArrayHandle<uint32_t> vaoArray = AddArray<uint32_t>(SkeletonTypes::num_skeletons);
+    ArrayHandle<uint32_t> elementBufferSizes = AddArray<uint32_t>(SkeletonTypes::num_skeletons);
+    struct Skeletons skeletons = { skeletonArray, vaoArray, elementBufferSizes };
 
     // The starting state is set
     State state = initializeScene1;
@@ -56,25 +59,28 @@ int main(int argc, char** argv)
         // Our input units need to be assigned values every loop
         CheckInput(&currentUpdate, &lastUpdate, &mouseWheel);
 
-        switch (state)
-        {
+        switch (state) {
         case initializeScene1:
-        {
-            InitializeScene1(&skeletalDrawUnits, &programs[skinning], &skeletons, &user);
+            InitializeScene1(&programs[skinning], &skeletons, &user);
 
             // All is well for the first scene to start
             state = scene1;
 
             break;
-        }
-        // case scene1:
-        // {
-        //     UpdateUser(&user, &camera.view, delta_time);
-        //     SetAnimationBones(user.animation_timer, nullptr);
-        //     SetUserGraphicsDataOrtho(programs[skinning], camera, user.user_transform, nullptr);
-        //     DrawSkeletalDrawUnits(&skeletalDrawUnits, programs[skinning].program_type.defaultProgram.program);
-        //     break;
-        // }
+        case scene1:
+            UpdateUser(&user, &camera.view, delta_time);
+            AnimateBones(user.animation_timer, skeletons.skeletons_array[avatar]);
+            SetUserGraphicsDataOrtho(programs[skinning], camera, user.user_transform, skeletons.skeletons_array[avatar]);
+            // Arbitrary phong material
+            PhongMaterial avatarPhong = {
+                { 0.1f, 0.1f, 0.0f },
+                { 0.5f, 0.5f, 0.0f },
+                { 1, 1, 1 },
+                1000
+            };
+            uint32_t program = programs[skinning].program_type.defaultProgram.program;
+            DrawPhongVAO(program, skeletons.vao_array[avatar], skeletons.element_buffer_sizes[avatar], avatarPhong);
+            break;
         }
 
         UpdateDisplay();

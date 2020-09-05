@@ -73,5 +73,5 @@ struct SkeletalVertex
 };
 
 void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<DefaultVertex> vertices, std::vector<uint32_t> indices);
-void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<SkeletalVertex> vertices, std::vector<uint32_t> indices);
+void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ArrayHandle<SkeletalVertex> vertices, std::vector<uint32_t> indices);
 void DestroyVAO(uint32_t* VAO);

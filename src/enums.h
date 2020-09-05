@@ -1,31 +1,31 @@
 
 enum State
 {
-	initializeAvatar,
-	initializeScene1,
-	scene1,
-	editor
+    initializeAvatar,
+    initializeScene1,
+    scene1,
+    editor
 };
 
 enum ProgramTypes
 {
-	default_program,
-	skinning,
-	normalMapSkinning,
+    default_program,
+    skinning,
+    normalMapSkinning,
 
-	num_programs
+    num_programs
 };
 
 enum SkeletonTypes
 {
-	avatar,
+    avatar,
 
-	num_skeletons
+    num_skeletons
 };
 
 enum Surfaces
 {
-	test,
+    test,
 
-	num_surfaces
+    num_surfaces
 };

@@ -72,7 +72,7 @@ uint32_t CreateShader(const char* source, uint32_t shaderType)
 {
     uint32_t shader = glCreateShader(shaderType);
 
-    // Make sure there is a fucking shader
+    // Make sure there is a shader
     assert(shader != 0);
 
     const char* shaderSource[1] = {source};
@@ -158,31 +158,33 @@ void UpdateUniforms(glm::mat4 world, glm::mat4 view, glm::mat4 perspective, Defa
     glUniformMatrix4fv(uniforms.perspective_matrix, 1, GL_FALSE, &perspective[0][0]);
 }
 
-
 // This method may have to be revised depending on how the value that the animation method returns
-void UpdateSkinningUniforms(glm::mat4 world, Camera camera, SkeletonSuper skeleton, SkinningUniforms uniforms)
+void UpdateSkinningUniforms(glm::mat4 world, Camera camera, Skeleton skeleton, SkinningUniforms uniforms)
 {
     glUniformMatrix4fv(uniforms.world_matrix, 1, GL_FALSE, &world[0][0]);
     glUniformMatrix4fv(uniforms.view_matrix, 1, GL_FALSE, &ViewMatrix(camera.view)[0][0]);
     glUniformMatrix4fv(uniforms.perspective_matrix, 1, GL_FALSE, &ProjectionMatrix(camera.projection)[0][0]);
 
     // It is important that the size of the bones doesn't supersede MAX_BONES
-    for (int i = 0; i < skeleton.bone_amount; i++)
+    uint32_t numSkeletonBones = GetArraySize<>(skeleton.bones);
+    assert(numSkeletonBones <= MAX_BONES);
+    for (int i = 0; i < numSkeletonBones; i++)
     {
-        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.animation_bone_transforms[i][0][0]);
+        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.bones[i][0][0]);
     }
 }
 
-void UpdateSkinningUniformsOrtho(glm::mat4 world, OrthoCamera camera, SkeletonSuper skeleton, SkinningUniforms uniforms)
+void UpdateSkinningUniformsOrtho(glm::mat4 world, OrthoCamera camera, Skeleton skeleton, SkinningUniforms uniforms)
 {
     glUniformMatrix4fv(uniforms.world_matrix, 1, GL_FALSE, &world[0][0]);
     glUniformMatrix4fv(uniforms.view_matrix, 1, GL_FALSE, &ViewMatrix(camera.view)[0][0]);
     glUniformMatrix4fv(uniforms.perspective_matrix, 1, GL_FALSE, &OrthoProjectionMatrix(camera.projection)[0][0]);
 
     // It is important that the size of the bones doesn't supersede MAX_BONES
-    for (int i = 0; i < skeleton.bone_amount; i++)
-    {
-        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.animation_bone_transforms[i][0][0]);
+    uint32_t numSkeletonBones = GetArraySize<>(skeleton.bones);
+    assert(numSkeletonBones <= MAX_BONES);
+    for (int i = 0; i < numSkeletonBones; i++) {
+        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.bones[i][0][0]);
     }
 }
 

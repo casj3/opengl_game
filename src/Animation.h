@@ -3,17 +3,8 @@
 #include <glm/glm.hpp>
 #include <vector>
 
+#include "Transform.h"
 #include <utils/ArrayManager.h>
-
-// TODO: Remove once the other structures, below, are put to use.
-struct SkeletonSuper
-{
-    std::vector<std::vector<glm::mat4>> key_bone_frames;
-    glm::mat4* animation_bone_transforms = nullptr;
-    int bone_amount;
-    // Not sure addition
-    int entity_id;
-};
 
 enum AnimationFlags {
     NONE = 0,
@@ -41,26 +32,27 @@ struct BoneAnimation {
 struct Skeleton {
     /// Iput for writing to bones.
     ArrayHandle<BoneAnimation> bone_anims;
+    
+    /// Start values of bone transform components, in case a
+    /// component doesn't animate for a given bone.
+    ArrayHandle<Transform> bone_transforms;
+
+    /// Output.
     ArrayHandle<glm::mat4> bones;
-    /// Signifies the transform components animating the skeleton.
-    int32_t animation_flags;
+
+    // Animation duration in seconds.
+    float animation_duration;
 };
 
 /// Maps skeletons to vertex array objects. This structure should not be in an array.
 /// There should only exist one instance of this structure in the application.
 struct Skeletons {
-    ArrayHandle<Skeleton> skeletons;
-    ArrayHandle<uint32_t> vao_array_id;
+    ArrayHandle<Skeleton> skeletons_array;
+    ArrayHandle<uint32_t> vao_array;
+    ArrayHandle<uint32_t> element_buffer_sizes;
 };
 
-/* TODO: Rewrite the functions below to work with the new structures. */
-
-// This method presupposes an exact correlation between animation keys and
-// the indicies of the matrix std::vector within the vector
-void SetAnimationBones(float animationTime, SkeletonSuper* animSuper);
-
-// The key_bone_frames mustn't be deallocated because it is a std::vector
-void DestroySkeleton(glm::mat4* animaitonBoneTransforms);
+void AnimateBones(float animationTime, Skeleton skeleton);
 
 /// Generats an integer that can be compared against the AnimationFlags to
 /// determine if position, rotation or scale has been set.

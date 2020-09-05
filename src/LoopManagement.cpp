@@ -7,44 +7,31 @@
 #include <utils/ArrayManager.h>
 #include "utils/MathFunctions.h"
 #include "VAO_Data.h"
+#include "enums.h"
 
 // Global variables which are declared as extern in different header files
 Input currentUpdate;
 Input lastUpdate;
 MouseWheel mouseWheel;
+// TODO: Revise how this is being used, most of the time the process exits heap allocation errors pop up.
+Assimp::Importer importer;
 
-// TODO: Must have a more generic way of loading scenes.
-void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* program,
-                      struct Skeletons* skeletons, UserSuper* user)
-{
-    // An importer to import ...
-    Assimp::Importer importer;
-    std::string avatarPath = "./assets/models/Duck_Running.fbx";
-    // ... a scene
+// TODO: Can't load scenes like this.
+void InitializeScene1(ProgramSuper* program, struct Skeletons* skeletons, UserSuper* user) {
+    std::string avatarPath = "./assets/models/test.fbx";
     const aiScene* scene = ImportScene(&importer, avatarPath);
 
-    // All the vertices and indices to create a VAO'
+    // All the vertices and indices to create a VAO
     ArrayHandle<SkeletalVertex> skeletalVertices;
     Skeleton skeleton = LoadSkeleton(scene, &skeletalVertices);
     std::vector<uint32_t> indices = LoadIndices(scene->mMeshes[0]);
 
-    // At the moment I don't think I need to store the data of the VBO and EBO,
-    // which may turn out to be a grave error
+    // TODO: Revise what to do with the VBO and EBO.
     uint32_t VAO, VBO, EBO;
-    // SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletalVertices, indices);
-    Textures textures = LoadMeshTextures(scene->mMeshes[0], scene, avatarPath);
-
-    // Allocate space for the skeleton whose data is sent to the GPU
-    // skeletonSuper->animation_bone_transforms =
-    //     (glm::mat4*)malloc(sizeof(glm::mat4) * skeletonSuper->key_bone_frames.size());
-    // Now the size of the array
-    // skeletonSuper->bone_amount = (sizeof(glm::mat4)* skeletonSuper->key_bone_frames.size()) / sizeof(glm::mat4);
-
-    // It's extremely important that these two push_back operations
-    // happen after each other, such that both vectors are parallel, matching
-    skeletalDrawUnits->vertex_array_objects.push_back(VAO);
-    skeletalDrawUnits->textures.push_back(textures);
-    skeletalDrawUnits->indices_size.push_back(indices.size());
+    SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletalVertices, indices);
+    skeletons->skeletons_array[SkeletonTypes::avatar] = skeleton;
+    skeletons->vao_array[SkeletonTypes::avatar] = VAO;
+    skeletons->element_buffer_sizes[SkeletonTypes::avatar] = indices.size();
 
     // Create the shaders
     CreateSkinningProgram(&program->program_type.defaultProgram, &program->uniforms_type.skinningUniforms);
@@ -56,15 +43,14 @@ void InitializeScene1(DrawUnitsTextured* skeletalDrawUnits, ProgramSuper* progra
     SubInitializeUser(user);
 }
 
-void SubInitializeUser(UserSuper* user)
-{
+void SubInitializeUser(UserSuper* user) {
     user->user_transform.rot = glm::vec3(degreesToRadians(-90), 0, 0);
     user->user_transform.scale = glm::vec3(100, 100, 100);
     user->user_transform.pos.z = 50;
-    user->user_transform.pos.x = -WIDTH/2;
+    user->user_transform.pos.x = -WIDTH / 2;
     user->user_transform.pos.y = HEIGHT / 2;
 
-    // ... and the time for the two key frames essential for gameplay
+    // The two key frames for avatar hold and animation end.
     user->animation_keys.state_1 = 3.6f;
     user->animation_keys.state_2 = 5.5f; // These values are hard-coded at the moment, meaning there must be a better way of figuring out the keyframe values.
     // ... and set the animation timer to 0 of course
@@ -72,8 +58,7 @@ void SubInitializeUser(UserSuper* user)
     user->stretch_booleans = { false, false };
 }
 
-void UpdateUser(UserSuper* user, View* view, float deltaTime)
-{
+void UpdateUser(UserSuper* user, View* view, float deltaTime) {
     SetPlayerInputVariables(&user->stretch_booleans, &user->rotation_incrementers);
 
     if (mouseWheel.input_received)
@@ -92,13 +77,12 @@ void UpdateUser(UserSuper* user, View* view, float deltaTime)
     }
 
     // Commenting this for the sake of the ortographic perspective
-    //SetCameraPos(&view->pos, user->user_transform.pos);
+    // SetCameraPos(&view->pos, user->user_transform.pos);
 
     mouseWheel.input_received = false;
 }
 
-void SetPlayerInputVariables(StretchBooleans* stretch, RotationIncrementers* rotInc)
-{
+void SetPlayerInputVariables(StretchBooleans* stretch, RotationIncrementers* rotInc) {
     // Start with rotation incrementers
     if (currentUpdate.D)
     {
@@ -133,8 +117,7 @@ void SetPlayerInputVariables(StretchBooleans* stretch, RotationIncrementers* rot
     }
 }
 
-void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform userTransform, SkeletonSuper skeleton)
-{
+void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform userTransform, Skeleton skeleton) {
     UpdateSkinningUniforms(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinningUniforms);
 
     // For now we will use an arbitrary value for the light
@@ -144,31 +127,9 @@ void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform use
 void SetUserGraphicsDataOrtho(ProgramSuper graphicsData,
                               OrthoCamera camera,
                               Transform userTransform,
-                              SkeletonSuper skeleton)
-{
+                              Skeleton skeleton) {
     UpdateSkinningUniformsOrtho(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinningUniforms);
 
-    // For now we will use an arbitrary value for the light
+    // Arbitrary value for the light
     UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
-}
-
-void DrawSkeletalDrawUnits(DrawUnitsTextured* skeletalDrawUnits, uint32_t program)
-{
-    // We choose an arbitrary phong material for the avatar draw unit
-
-    PhongMaterial avatarPhong =
-        {
-            { 0.1f, 0.1f, 0.0f },
-            { 0.5f, 0.5f, 0.0f },
-            { 1, 1, 1 },
-            1000
-        };
-
-    // We draw the avatar without the texture to test the validity of the shaders. OBS! This function is clearly not
-    // finished for the sake of scalability.
-
-    for (uint32_t i = 0; i < skeletalDrawUnits->vertex_array_objects.size(); i++)
-    {
-        DrawPhongVAO(program, skeletalDrawUnits->vertex_array_objects[i], skeletalDrawUnits->indices_size[i], avatarPhong);
-    }
 }
