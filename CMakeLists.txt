@@ -15,7 +15,7 @@ src/LoadVAO.cpp
 src/LoopManagement.cpp
 src/utils/MathFunctions.cpp
 src/utils/Array.cpp
-src/utils/Allocator.cpp
+src/utils/ArrayManager.cpp
 src/utils/Sort.cpp
 src/Shader.cpp
 src/Transform.cpp
@@ -33,7 +33,7 @@ src/LoadVAO.h
 src/LoopManagement.h
 src/utils/MathFunctions.h
 src/utils/Array.h
-src/utils/Allocator.h
+src/utils/ArrayManager.h
 src/utils/Sort.h
 src/Shader.h
 src/Transform.h

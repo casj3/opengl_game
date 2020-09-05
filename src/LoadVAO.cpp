@@ -5,7 +5,7 @@
 #include <GL/glew.h>
 #include <glm/gtx/quaternion.hpp>
 #include <assimp/postprocess.h>
-#include "utils/Allocator.h"
+#include "utils/ArrayManager.h"
 #include "utils/LibraryTranslations.h"
 #include "utils/Sort.h"
 #include "Transform.h"
@@ -30,8 +30,8 @@ void AddAnimationKeys(BoneAnimKeys* outAnimKeys,
                       AppendArray<Pair<uint32_t, glm::vec3>> animComponent,
                       float keyFrameTime) {
     BoneAnimKeys animKeys = {
-        Allocator::AddArray<glm::vec3>(animComponent.counter),
-        Allocator::AddArray<float>(animComponent.counter),
+        AddArray<glm::vec3>(animComponent.counter),
+        AddArray<float>(animComponent.counter),
     };
 
     for (uint32_t i = 0; i < animComponent.counter; i++) {
@@ -44,14 +44,14 @@ void AddAnimationKeys(BoneAnimKeys* outAnimKeys,
 
 // Helper functions internal to the file
 void RemoveNodeKeyFrameValues(ArrayHandle<NodeKeyFrameValues> nodes) {
-    uint32_t arraySize = Allocator::GetArraySize<>(nodes);
+    uint32_t arraySize = GetArraySize<>(nodes);
     for(uint32_t i = 0; i < arraySize; i++) {
         NodeKeyFrameValues node = nodes[i];
-        Allocator::RemoveArray<>(node.positions.handle);
-        Allocator::RemoveArray<>(node.rotations.handle);
-        Allocator::RemoveArray<>(node.scalings.handle);
+        RemoveArray<>(node.positions.handle);
+        RemoveArray<>(node.rotations.handle);
+        RemoveArray<>(node.scalings.handle);
     }
-    Allocator::RemoveArray<>(nodes);
+    RemoveArray<>(nodes);
 }
 
 void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, BoneAnimation* boneAnimation, float keyFrameTime);
@@ -274,9 +274,9 @@ void DestroyTextures(Textures textures)
 // TODO: Add documentation for clarifying that this function depends on scene to mesh correspondence.
 Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVertices) {
     aiMesh* mesh = scene->mMeshes[0];
-    ArrayHandle<SkeletalVertex> vertices = Allocator::AddArray<SkeletalVertex>(mesh->mNumVertices);
+    ArrayHandle<SkeletalVertex> vertices = AddArray<SkeletalVertex>(mesh->mNumVertices);
 
-    assert(mesh->mNumVertices == Allocator::GetArraySize<SkeletalVertex>(vertices));
+    assert(mesh->mNumVertices == GetArraySize<SkeletalVertex>(vertices));
 
     for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
         SkeletalVertex vertex;
@@ -321,15 +321,15 @@ Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVert
 
     // TODO: Support multiple animations per mesh. We should wait with this until we know what kinds of animations we have per type of mesh.
     // Doing one animation per mesh to begin with.
-    ArrayHandle<NodeKeyFrameValues> nodes = Allocator::AddArray<NodeKeyFrameValues>(mesh->mNumBones);
+    ArrayHandle<NodeKeyFrameValues> nodes = AddArray<NodeKeyFrameValues>(mesh->mNumBones);
 
     nodes = ImportGlobalBonesThroughTime(nodes, numKeyFrames, scene->mRootNode, { mesh, scene->mAnimations[0] });
 
     float animationSeconds = (float) (scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
     float secondsPerKeyFrame = animationSeconds / numKeyFrames;
 
-    ArrayHandle<BoneAnimation> boneAnims = Allocator::AddArray<BoneAnimation>(mesh->mNumBones);
-    ArrayHandle<glm::mat4> bones = Allocator::AddArray<glm::mat4>(mesh->mNumBones);
+    ArrayHandle<BoneAnimation> boneAnims = AddArray<BoneAnimation>(mesh->mNumBones);
+    ArrayHandle<glm::mat4> bones = AddArray<glm::mat4>(mesh->mNumBones);
     int32_t skeletonAnimationFlags = AnimationFlags::NONE;
     for (uint32_t i = 0; i < mesh->mNumBones; i++) {
         GetBoneAnimation(nodes[i], &bones[i], &boneAnims[i], secondsPerKeyFrame);
@@ -398,8 +398,8 @@ ArrayHandle<NodeKeyFrameValues> ImportGlobalBonesThroughTime(ArrayHandle<NodeKey
     // The number of animNodeMarkers is probably smaller than we allocate for, but since we don't know its size,
     // it will have to do.
     NodeMarkers nodeMarkers;
-    nodeMarkers.anim = Allocator::AddArray<Pair<uint32_t, uint32_t>>(boneRes.mesh->mNumBones);
-    nodeMarkers.bone = Allocator::AddArray<Pair<uint32_t, uint32_t>>(boneRes.mesh->mNumBones);
+    nodeMarkers.anim = AddArray<Pair<uint32_t, uint32_t>>(boneRes.mesh->mNumBones);
+    nodeMarkers.bone = AddArray<Pair<uint32_t, uint32_t>>(boneRes.mesh->mNumBones);
 
     // Record values for succeeding traversals of the node tree.
     AddGlobalBonesForFirstKeyFrame(meshRoot, &aiMatrix4x4(), boneRes, { boneNodes, }, { nodeMarkers.anim }, { nodeMarkers.bone }, numKeyFrames, 0);
@@ -411,8 +411,8 @@ ArrayHandle<NodeKeyFrameValues> ImportGlobalBonesThroughTime(ArrayHandle<NodeKey
     // Use the AppendArrays to create the new key frame tables for scale, rotation and position per bone.
     Sort::RadixSortArrayLikePairs<NodeKeyFrameValues>(nodeMarkers.bone, boneNodes, boneRes.mesh->mNumBones);
 
-    Allocator::RemoveArray<>(nodeMarkers.anim);
-    Allocator::RemoveArray<>(nodeMarkers.bone);
+    RemoveArray<>(nodeMarkers.anim);
+    RemoveArray<>(nodeMarkers.bone);
 
     return boneNodes;
 }
@@ -434,7 +434,7 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
 
         // Increment counter to compare with the next entry in the array for the next node.
         // Only increment the counter if it's within array bounds.
-        uint32_t numAnimNodes = Allocator::GetArraySize<>(nodeMarkers.anim);
+        uint32_t numAnimNodes = GetArraySize<>(nodeMarkers.anim);
         animNodeCounter += animNodeCounter < numAnimNodes - 1;
     }
 
@@ -459,21 +459,21 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
             // has to be added such that the interpolation occurs between the last key-frame differing from
             // the new one being added.
             if (keyFrame - prevPos.key > 1) {
-                node.positions = Allocator::AppendElement<>(node.positions, prevPos);
+                node.positions = AppendElement<>(node.positions, prevPos);
             }
-            node.positions = Allocator::AppendElement<>(node.positions, { keyFrame, parentTransform.pos });
+            node.positions = AppendElement<>(node.positions, { keyFrame, parentTransform.pos });
         }
         if (prevRot.value != parentTransform.rot) {
             if (keyFrame - prevRot.key > 1) {
-                node.positions = Allocator::AppendElement<>(node.rotations, prevRot);
+                node.positions = AppendElement<>(node.rotations, prevRot);
             }
-            node.rotations = Allocator::AppendElement<>(node.rotations, { keyFrame, parentTransform.rot });
+            node.rotations = AppendElement<>(node.rotations, { keyFrame, parentTransform.rot });
         }
         if (prevScale.value != parentTransform.scale) {
             if (keyFrame - prevScale.key > 1) {
-                node.positions = Allocator::AppendElement<>(node.scalings, prevScale);
+                node.positions = AppendElement<>(node.scalings, prevScale);
             }
-            node.scalings = Allocator::AppendElement<>(node.scalings, { keyFrame, parentTransform.scale });
+            node.scalings = AppendElement<>(node.scalings, { keyFrame, parentTransform.scale });
         }
 
         // We mustn't forget to write back to the real node instance, since we're dealing with copies.
@@ -484,7 +484,7 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
     }
 
     // If all bones have been retrieved, return.
-    uint32_t numBones = Allocator::GetArraySize<Pair<uint32_t, uint32_t>>(nodeMarkers.bone);
+    uint32_t numBones = GetArraySize<Pair<uint32_t, uint32_t>>(nodeMarkers.bone);
     if (boneNodeCounter >= numBones) {
         return;
     }
@@ -523,9 +523,9 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
     if (IsBone(boneRes.mesh, nodeName, &boneNodeMarkers, nodeCounter)) {
         NodeKeyFrameValues node = {
             nodeName,
-            { Allocator::AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
-            { Allocator::AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
-            { Allocator::AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
+            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
+            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
+            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
         };
 
         uint32_t boneId = boneNodeMarkers.handle[boneNodeMarkers.counter - 1].value;
@@ -533,11 +533,11 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
         // Multiply by the offset of the bone to get global space values.
         Transform parentTransform = GetTransform(*parent * boneRes.mesh->mBones[boneId]->mOffsetMatrix);
 
-        node.positions = Allocator::AppendElement<>(node.positions, { kFirstKeyFrame, parentTransform.pos });
-        node.rotations = Allocator::AppendElement<>(node.rotations, { kFirstKeyFrame, parentTransform.rot });
-        node.scalings = Allocator::AppendElement<>(node.scalings, { kFirstKeyFrame, parentTransform.scale });
+        node.positions = AppendElement<>(node.positions, { kFirstKeyFrame, parentTransform.pos });
+        node.rotations = AppendElement<>(node.rotations, { kFirstKeyFrame, parentTransform.rot });
+        node.scalings = AppendElement<>(node.scalings, { kFirstKeyFrame, parentTransform.scale });
 
-        nodes = Allocator::AppendElement<>(nodes, node);
+        nodes = AppendElement<>(nodes, node);
     }
 
     for (uint32_t i = 0; i < root->mNumChildren; i++) {
@@ -622,7 +622,7 @@ const aiNodeAnim* FindNodeAnim(aiAnimation* animation,
             // be called again, but instead a counter which is incremented for
             // every traversed node can be used for comparison against the next
             // value of the animNodeMarkers array.
-            *animNodeMarkers = Allocator::AppendElement<Pair<uint32_t, uint32_t>>(*animNodeMarkers, { nodeCounter, i });
+            *animNodeMarkers = AppendElement<Pair<uint32_t, uint32_t>>(*animNodeMarkers, { nodeCounter, i });
             return nodeAnim;
         }
     }
@@ -636,7 +636,7 @@ bool IsBone(aiMesh* mesh, const char* nodeName, AppendArray<Pair<uint32_t, uint3
             // The order in which the nodes are traversed is stored in this array.
             // Next time the nodes are traversed, this functions does not need to
             // be called again.
-            *boneNodeMarkers = Allocator::AppendElement<Pair<uint32_t, uint32_t>>(*boneNodeMarkers, { nodeCounter, i });
+            *boneNodeMarkers = AppendElement<Pair<uint32_t, uint32_t>>(*boneNodeMarkers, { nodeCounter, i });
             return true;
         }
     }

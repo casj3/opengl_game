@@ -3,7 +3,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 
-#include <utils/Allocator.h>
+#include <utils/ArrayManager.h>
 
 // TODO: Remove once the other structures, below, are put to use.
 struct SkeletonSuper

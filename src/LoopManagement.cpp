@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-#include <utils/Allocator.h>
+#include <utils/ArrayManager.h>
 #include "utils/MathFunctions.h"
 #include "VAO_Data.h"
 

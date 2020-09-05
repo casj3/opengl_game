@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 #include <LoadVAO.h>
-#include "Allocator.h"
+#include "ArrayManager.h"
 
 namespace Sort {
 
@@ -14,8 +14,8 @@ void CountSortArrayLikePairs(ArrayHandle<Pair<uint32_t, uint32_t>> pairs,
                              ArrayHandle<T> array,
                              uint32_t size,
                              uint32_t step) {
-    ArrayHandle<Pair<uint32_t, uint32_t>> pairOutput = Allocator::AddArray<Pair<uint32_t, uint32_t>>(size);
-    ArrayHandle<T> arrayOutput = Allocator::AddArray<T>(size);
+    ArrayHandle<Pair<uint32_t, uint32_t>> pairOutput = AddArray<Pair<uint32_t, uint32_t>>(size);
+    ArrayHandle<T> arrayOutput = AddArray<T>(size);
 
     constexpr uint32_t kRadixCountMax = 10;
     uint32_t counts[kRadixCountMax] = {0};
@@ -49,8 +49,8 @@ void CountSortArrayLikePairs(ArrayHandle<Pair<uint32_t, uint32_t>> pairs,
         array[i] = arrayOutput[i];
     }
 
-    Allocator::RemoveArray<>(pairOutput);
-    Allocator::RemoveArray<>(arrayOutput);
+    RemoveArray<>(pairOutput);
+    RemoveArray<>(arrayOutput);
 }
 
 /// Sorts the array with respect to value of the pair.

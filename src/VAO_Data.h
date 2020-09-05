@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-#include "utils/Allocator.h"
+#include "utils/ArrayManager.h"
 
 // These macros are only valid for a normal map skeletal vertex
 #define POSITION_LOCATION 0

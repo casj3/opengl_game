@@ -17,7 +17,7 @@ struct ArrayHandle {
 
     /// Retrieves a reference to the element with elementId.
     T& operator[](uint32_t elementId) {
-        return Allocator::arrays<T>.elements[id][elementId];
+        return arrays<T>.elements[id][elementId];
     }
 };
 
@@ -28,24 +28,19 @@ struct AppendArray {
 };
 
 template<typename T>
-struct RemoveAtEndOfScope {
-    RemoveAtEndOfScope(ArrayHandle<T> arrayHandle) {
+struct DestructorArray {
+    DestructorArray(ArrayHandle<T> arrayHandle) {
         array_handle = arrayHandle;
     }
 
-    ~RemoveAtEndOfScope() {
-        Allocator::RemoveArray(array_handle);
+    ~DestructorArray() {
+        RemoveArray(array_handle);
     }
 
     ArrayHandle<T> array_handle;
 };
 
-namespace Allocator {
-// Different columns which will only be known to the allocator.
-// It is the owner and sole distributor of allocated memory.
-// It keeps pointers to arrays of pointers to other arrays, which
-// are accessed through ArrayHandles.
-
+/// Contains information of all arrays of one kind, T. Only meant for use in this file.
 template<typename T>
 struct Arrays {
     T** elements;
@@ -56,7 +51,8 @@ struct Arrays {
     uint32_t num_arrays;
 };
 
-/// Should not be accessed directly. Only indirect access through function use is allowed.
+/// All arrays. Do not use. For utilizing the arrays, use the ArrayHandle and the functions
+/// which process it.
 template<typename T>
 extern Arrays<T> arrays;
 
@@ -185,5 +181,4 @@ void InitArrays(uint32_t capacity) {
 }
 
 /// Initializes the allocator.
-void InitAllocator(uint32_t capacity);
-}
+void InitArrayManager(uint32_t capacity);

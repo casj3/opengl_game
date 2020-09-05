@@ -6,7 +6,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include "Animation.h"
-#include <utils/Allocator.h>
+#include <utils/ArrayManager.h>
 #include "VAO_Data.h"
 
 template <typename K, typename V>
