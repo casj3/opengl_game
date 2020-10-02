@@ -3,14 +3,16 @@
 
 #include <math.h>
 
-#define ANIM_TIME_DEBUG 1
+#include "utils/Print.h"
 
 glm::vec3 GetAnimatedValue(float animationTime, BoneAnimKeys boneAnimKeys) {
     uint32_t numKeyFrames = GetArraySize<>(boneAnimKeys.key_frames);
     uint32_t i = 0;
-    while(i < numKeyFrames - 1 && animationTime < boneAnimKeys.key_frames[i]) {
+    // TODO: Revisit these conditions.
+    while(i < numKeyFrames - 1 && boneAnimKeys.key_frames[i + 1] < animationTime) {
         i++;
     }
+    Print("Animation time between IDs %u and %u\n", i, i + 1);
     float deltaTime = boneAnimKeys.key_frames[i + 1] - boneAnimKeys.key_frames[i];
     float factor = (animationTime - boneAnimKeys.key_frames[i]) / deltaTime;
 
@@ -23,9 +25,7 @@ glm::vec3 GetAnimatedValue(float animationTime, BoneAnimKeys boneAnimKeys) {
 void AnimateBones(float animationTime, Skeleton skeleton) {
     animationTime = fmod(animationTime, skeleton.animation_duration);
 
-#if ANIM_TIME_DEBUG
-    printf("animationTime=%.6f\n", animationTime);
-#endif
+    Print("animationTime=%.6f\n", animationTime);
     
     uint32_t numBones = GetArraySize<>(skeleton.bones);
     for(uint32_t i = 0; i < numBones; i++) {

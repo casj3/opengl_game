@@ -313,7 +313,7 @@ Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVert
     nodes = ImportGlobalBonesThroughTime(nodes, numKeyFrames, scene->mRootNode, { mesh, scene->mAnimations[0] });
 
     float animationSeconds = (float) (scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
-    float secondsPerKeyFrame = animationSeconds / numKeyFrames;
+    float secondsPerKeyFrame = animationSeconds / (numKeyFrames - 1);
 
     ArrayHandle<BoneAnimation> boneAnims = AddArray<BoneAnimation>(mesh->mNumBones);
     ArrayHandle<Transform> boneTransforms = AddArray<Transform>(mesh->mNumBones);
