@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <intrin.h>
 
+#include "Print.h"
+
 #define INT32_BIT_SIZE 32
 
 namespace Array {

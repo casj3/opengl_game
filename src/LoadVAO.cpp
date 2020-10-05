@@ -9,6 +9,7 @@
 #include "utils/LibraryTranslations.h"
 #include "utils/Sort.h"
 #include "Transform.h"
+#include "utils/Print.h"
 
 // TODO: Use the functions outlined in the OpenGL Programming Guide for texture loading and remove these two lines below.
 #define STB_IMAGE_IMPLEMENTATION
@@ -315,6 +316,10 @@ Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVert
     float animationSeconds = (float) (scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
     float secondsPerKeyFrame = animationSeconds / (numKeyFrames - 1);
 
+    Print("Number of key frames %u\n", numKeyFrames);
+    Print("Seconds per key frame %.6f\n", secondsPerKeyFrame);
+    Print("Animation second duration %.6f\n", animationSeconds);
+
     ArrayHandle<BoneAnimation> boneAnims = AddArray<BoneAnimation>(mesh->mNumBones);
     ArrayHandle<Transform> boneTransforms = AddArray<Transform>(mesh->mNumBones);
     ArrayHandle<glm::mat4> bones = AddArray<glm::mat4>(mesh->mNumBones);
@@ -370,6 +375,7 @@ void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, Transform* trans
                    node.rotations.handle[0].value,
                    node.scalings.handle[0].value };
 
+    // Add the starting bone to the bone array that will be used as the output destination.
     *bone = TransformMatrix(*transform);
 }
 
