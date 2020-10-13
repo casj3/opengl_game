@@ -7,6 +7,9 @@
 
 glm::vec3 GetAnimatedValue(float animationTime, BoneAnimKeys boneAnimKeys) {
     uint32_t numKeyFrames = GetArraySize<>(boneAnimKeys.key_frames);
+    if (boneAnimKeys.key_frames[numKeyFrames - 1] < animationTime) {
+        return boneAnimKeys.values[numKeyFrames - 1];
+    }
     uint32_t i = 0;
     // TODO: Revisit these conditions.
     while(i < numKeyFrames - 1 && boneAnimKeys.key_frames[i + 1] < animationTime) {
