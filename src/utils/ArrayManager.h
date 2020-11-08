@@ -156,6 +156,12 @@ AppendArray<T> AppendElement(AppendArray<T> array, T element) {
     return array;
 }
 
+/// @returns the id of the last appended element in the AppendArray. A negative value is returned if nothing has been appended.
+template<typename T>
+int GetBack(AppendArray<T> array) {
+    return array.counter - 1;
+}
+
 /// Replaces the specified element with the back element and decrements the appended elements count of the array.
 ///
 /// @param array The AppendArray.

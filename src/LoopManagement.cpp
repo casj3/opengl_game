@@ -18,7 +18,7 @@ Assimp::Importer importer;
 
 // TODO: Can't load scenes like this.
 void InitializeScene1(ProgramSuper* program, struct Skeletons* skeletons, UserSuper* user) {
-    std::string avatarPath = "./assets/models/test.fbx";
+    std::string avatarPath = "./assets/models/Duck_Running.fbx";
     const aiScene* scene = ImportScene(&importer, avatarPath);
 
     // All the vertices and indices to create a VAO
@@ -45,7 +45,7 @@ void InitializeScene1(ProgramSuper* program, struct Skeletons* skeletons, UserSu
 
 void SubInitializeUser(UserSuper* user) {
     user->user_transform.rot = glm::vec3(degreesToRadians(-90), 0, 0);
-    user->user_transform.scale = glm::vec3(100, 100, 100);
+    user->user_transform.scale = glm::vec3(1, 1, 1);
     user->user_transform.pos.z = 50;
     user->user_transform.pos.x = -WIDTH / 2;
     user->user_transform.pos.y = HEIGHT / 2;
@@ -77,7 +77,7 @@ void UpdateUser(UserSuper* user, View* view, float deltaTime) {
     }
 
     // Commenting this for the sake of the ortographic perspective
-    // SetCameraPos(&view->pos, user->user_transform.pos);
+    SetCameraPos(&view->pos, user->user_transform.pos);
 
     mouseWheel.input_received = false;
 }

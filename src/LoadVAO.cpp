@@ -311,8 +311,7 @@ Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVert
         memset(vertices[i].weights, 0, sizeof(vertices[i].weights));
     }
 
-    // We rely upon a total match between the amount of key frames
-    // and the time value within those key frames - an index to value correspondence. The models are baked.
+    // The largest amount of a transform component's keys set the roof for the total amount of key-frames for the animation
     uint32_t numPositionKeys = scene->mAnimations[0]->mChannels[0]->mNumPositionKeys;
     uint32_t numRotationKeys = scene->mAnimations[0]->mChannels[0]->mNumRotationKeys;
     uint32_t numScaleKeys = scene->mAnimations[0]->mChannels[0]->mNumScalingKeys;
@@ -327,15 +326,14 @@ Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVert
     // TODO: Support multiple animations per mesh. We should wait with this until we know what kinds of animations we have per type of mesh.
     // Doing one animation per mesh to begin with.
     ArrayHandle<NodeKeyFrameValues> nodes = AddArray<NodeKeyFrameValues>(mesh->mNumBones);
-
-    nodes = ImportGlobalBonesThroughTime(nodes, numKeyFrames, scene->mRootNode, { mesh, scene->mAnimations[0] });
-
     float animationSeconds = (float) (scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
     float secondsPerKeyFrame = animationSeconds / (numKeyFrames - 1);
 
     Print("Number of key frames %u\n", numKeyFrames);
     Print("Seconds per key frame %.6f\n", secondsPerKeyFrame);
     Print("Animation second duration %.6f\n", animationSeconds);
+
+    nodes = ImportGlobalBonesThroughTime(nodes, numKeyFrames, scene->mRootNode, { mesh, scene->mAnimations[0] });
 
     ArrayHandle<BoneAnimation> boneAnims = AddArray<BoneAnimation>(mesh->mNumBones);
     ArrayHandle<Transform> boneTransforms = AddArray<Transform>(mesh->mNumBones);
@@ -368,6 +366,7 @@ Skeleton LoadSkeleton(const aiScene* scene, ArrayHandle<SkeletalVertex>* outVert
                           boneTransforms,
                           bones,
                           animationSeconds };
+
     return skeleton;
 }
 
@@ -401,22 +400,20 @@ ArrayHandle<NodeKeyFrameValues> ImportGlobalBonesThroughTime(ArrayHandle<NodeKey
                                                              aiNode* meshRoot,
                                                              AiBoneResources boneRes) {
     // Keep track of the order of animation and skeletal nodes to avoid searching for them more than one time.
-    // The number of animNodeMarkers is probably smaller than we allocate for, but since we don't know its size,
-    // it will have to do.
     NodeMarkers nodeMarkers;
-    nodeMarkers.anim = AddArray<Pair<uint32_t, uint32_t>>(boneRes.mesh->mNumBones);
+    nodeMarkers.anim = AddArray<Pair<uint32_t, uint32_t>>(boneRes.animation->mNumChannels);
     nodeMarkers.bone = AddArray<Pair<uint32_t, uint32_t>>(boneRes.mesh->mNumBones);
 
     aiMatrix4x4 identityMatrix = aiMatrix4x4();
     uint32_t nodeCounter = 0;
-    uint32_t animNodeCounter = 0;
-    uint32_t boneNodeCounter = 0;
-    AppendArray<Pair<uint32_t, uint32_t>> appAnimMarkers  = { nodeMarkers.anim };
-    AppendArray<Pair<uint32_t, uint32_t>> appBoneMarkers = { nodeMarkers.bone };
+    AppendArray<Pair<uint32_t, uint32_t>> appAnimMarkers  = { nodeMarkers.anim, 0 };
+    AppendArray<Pair<uint32_t, uint32_t>> appBoneMarkers = { nodeMarkers.bone, 0 };
     // Record values for succeeding traversals of the node tree.
     AddGlobalBonesForFirstKeyFrame(meshRoot, identityMatrix, boneRes, boneNodes,
                                    &appAnimMarkers, &appBoneMarkers, numKeyFrames, &nodeCounter);
 
+    uint32_t animNodeCounter;
+    uint32_t boneNodeCounter;
     for(uint32_t i = kFirstKeyFrame + 1; i < numKeyFrames; i++) {
         nodeCounter = 0;
         animNodeCounter = 0;
@@ -447,15 +444,15 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
         return;
     }
 
-    Pair<uint32_t, uint32_t> animNodeMarker = nodeMarkers.anim[*animNodeCounter];
-    if (*nodeCounter == animNodeMarker.key) {
-        aiNodeAnim* nodeAnim = boneRes.animation->mChannels[animNodeMarker.value];
+    // If the animation node counter hasn't been surpassed by
+    uint32_t numAnimNodes = GetArraySize<>(nodeMarkers.anim);
+    if (numAnimNodes > *animNodeCounter && *nodeCounter == nodeMarkers.anim[*animNodeCounter].key) {
+        uint32_t animNodeId = nodeMarkers.anim[*animNodeCounter].value;
+        aiNodeAnim* nodeAnim = boneRes.animation->mChannels[animNodeId];
         UpdateParentMatrix(&parent, nodeAnim, keyFrame);
 
         // Increment counter to compare with the next entry in the array for the next node.
-        // Only increment the counter if it's within array bounds.
-        uint32_t numAnimNodes = GetArraySize<>(nodeMarkers.anim);
-        *animNodeCounter += *animNodeCounter < numAnimNodes - 1;
+        (*animNodeCounter)++;
     } else {
         parent *= root->mTransformation;
     }
@@ -464,9 +461,9 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
     if (*nodeCounter == boneNodeMarker.key) {
         NodeKeyFrameValues node = nodes[boneNodeMarker.value];
 
-        uint32_t prevPosId = node.positions.counter - 1;
-        uint32_t prevRotId = node.rotations.counter - 1;
-        uint32_t prevScaleId = node.scalings.counter - 1;
+        uint32_t prevPosId = GetBack(node.positions);
+        uint32_t prevRotId = GetBack(node.rotations);
+        uint32_t prevScaleId = GetBack(node.scalings);
 
         Pair<uint32_t, glm::vec3> prevPos = node.positions.handle[prevPosId];
         Pair<uint32_t, glm::vec3> prevRot = node.rotations.handle[prevRotId];
@@ -543,12 +540,13 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
     if (IsBone(boneRes.mesh, nodeName, boneNodeMarkers, *nodeCounter)) {
         NodeKeyFrameValues node = {
             nodeName,
-            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
-            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
-            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames) },
+            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames), 0 },
+            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames), 0 },
+            { AddArray<Pair<uint32_t, glm::vec3>>(numKeyFrames), 0 },
         };
 
-        uint32_t boneId = boneNodeMarkers->handle[boneNodeMarkers->counter - 1].value;
+        // The boneId is used to arrange the NodeKeyFrameValues in the same order as the assimp bone array, inherent to the aiMesh
+        uint32_t boneId = boneNodeMarkers->handle[GetBack(*boneNodeMarkers)].value;
 
         // Multiply by the offset of the bone to get global space values.
         aiMatrix4x4 globalParent = parent * boneRes.mesh->mBones[boneId]->mOffsetMatrix;
@@ -575,29 +573,14 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
 }
 
 void UpdateParentMatrix(aiMatrix4x4* parent, const aiNodeAnim* nodeAnim, uint32_t keyFrame) {
-    aiVector3D scaling;
-    if (nodeAnim->mNumScalingKeys == 1) {
-        scaling = nodeAnim->mScalingKeys[0].mValue;
-    }
-    else {
-        scaling = nodeAnim->mScalingKeys[keyFrame].mValue;
-    }
+    bool useKeyFrame = nodeAnim->mNumScalingKeys != 1 && keyFrame < nodeAnim->mNumScalingKeys;
+    aiVector3D scaling = nodeAnim->mScalingKeys[keyFrame * useKeyFrame].mValue;
 
-    aiQuaternion rotationQ;
-    if (nodeAnim->mNumRotationKeys == 1) {
-        rotationQ = nodeAnim->mRotationKeys[0].mValue;
-    }
-    else {
-        rotationQ = nodeAnim->mRotationKeys[keyFrame].mValue;
-    }
+    useKeyFrame = nodeAnim->mNumRotationKeys != 1 && keyFrame < nodeAnim->mNumRotationKeys;
+    aiQuaternion rotationQ = nodeAnim->mRotationKeys[keyFrame * useKeyFrame].mValue;
 
-    aiVector3D translation;
-    if (nodeAnim->mNumPositionKeys == 1) {
-        translation = nodeAnim->mPositionKeys[0].mValue;
-    }
-    else {
-        translation = nodeAnim->mPositionKeys[keyFrame].mValue;
-    }
+    useKeyFrame = nodeAnim->mNumPositionKeys != 1 && keyFrame < nodeAnim->mNumPositionKeys;
+    aiVector3D translation = nodeAnim->mPositionKeys[keyFrame * useKeyFrame].mValue;
 
     // Refresh parent for next node
     *parent *= aiMatrix4x4(scaling, rotationQ, translation);

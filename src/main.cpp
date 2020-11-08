@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     float delta_time = 0;
 
     // The means by which a camera is constructed
-    OrthoCamera camera;
+    Camera camera;
 
     // Containers of program data used to create programs constituted of shaders
     ProgramSuper programs[ProgramTypes::num_programs];
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         case scene1:
             UpdateUser(&user, &camera.view, delta_time);
             AnimateBones(user.animation_timer, skeletons.skeletons_array[avatar]);
-            SetUserGraphicsDataOrtho(programs[skinning], camera, user.user_transform, skeletons.skeletons_array[avatar]);
+            SetUserGraphicsData(programs[skinning], camera, user.user_transform, skeletons.skeletons_array[avatar]);
             // Arbitrary phong material
             PhongMaterial avatarPhong = {
                 { 0.1f, 0.1f, 0.0f },
