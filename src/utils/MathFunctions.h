@@ -6,7 +6,10 @@
 
 #define degreesToRadians(x) x * (3.141592f/180.0f)
 
+typedef unsigned long double ul_double;
+
 float VecDistance(glm::vec3 pos1, glm::vec3 pos2);
+ul_double GetFraction(ul_double numerator, ul_double denominator);
 void ComputeTangentSpace(NormalMapVertex* v0, NormalMapVertex* v1, NormalMapVertex* v2);
 bool CircleCollision(glm::vec3 pos1, glm::vec3 pos2, float radius1, float radius2);
 void ComputeNormalsPolygon(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* v2);

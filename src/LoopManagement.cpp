@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-#include <utils/ArrayManager.h>
+#include <utils/ArrayPool.h>
 #include "utils/MathFunctions.h"
 #include "VAO_Data.h"
 #include "enums.h"
@@ -22,16 +22,16 @@ void InitializeScene1(ProgramSuper* program, struct Skeletons* skeletons, UserSu
     const aiScene* scene = ImportScene(&importer, avatarPath);
 
     // All the vertices and indices to create a VAO
-    ArrayHandle<SkeletalVertex> skeletalVertices;
+    ARRAY_HANDLE(SkeletalVertex) skeletalVertices;
     Skeleton skeleton = LoadSkeleton(scene, &skeletalVertices);
     std::vector<uint32_t> indices = LoadIndices(scene->mMeshes[0]);
 
     // TODO: Revise what to do with the VBO and EBO.
     uint32_t VAO, VBO, EBO;
     SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletalVertices, indices);
-    skeletons->skeletons_array[SkeletonTypes::avatar] = skeleton;
-    skeletons->vao_array[SkeletonTypes::avatar] = VAO;
-    skeletons->element_buffer_sizes[SkeletonTypes::avatar] = indices.size();
+    *skeletons->skeletons_array[SkeletonTypes::avatar] = skeleton;
+    *skeletons->vao_array[SkeletonTypes::avatar] = VAO;
+    *skeletons->element_buffer_sizes[SkeletonTypes::avatar] = indices.size();
 
     // Create the shaders
     CreateSkinningProgram(&program->program_type.defaultProgram, &program->uniforms_type.skinningUniforms);

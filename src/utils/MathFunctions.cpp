@@ -8,6 +8,10 @@ float VecDistance(glm::vec3 pos1, glm::vec3 pos2)
 	return length(dist);
 }
 
+ul_double GetFraction(ul_double numerator, ul_double denominator) {
+    return numerator / denominator;
+}
+
 void ComputeTangentSpace(NormalMapVertex* v0, NormalMapVertex* v1, NormalMapVertex* v2)
 {
 	// Lengyels method

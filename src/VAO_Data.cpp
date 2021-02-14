@@ -31,8 +31,7 @@ void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<De
     glBindVertexArray(0);
 }
 
-// TODO: Revise to see if the vbo and ebo parameters are necessary.
-void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ArrayHandle<SkeletalVertex> vertices, std::vector<uint32_t> indices)
+void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ARRAY_HANDLE(SkeletalVertex) vertices, std::vector<uint32_t> indices)
 {
     // Create buffers/arrays
     glGenVertexArrays(1, VAO);
@@ -42,7 +41,7 @@ void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ArrayHandle<S
     glBindVertexArray(*VAO);
     // Load data into vertex buffers
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glBufferData(GL_ARRAY_BUFFER, GetArraySize<>(vertices) * sizeof(SkeletalVertex), &vertices[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, GET_ARRAY_SIZE(vertices) * sizeof(SkeletalVertex), *vertices, GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLuint), &indices[0], GL_STATIC_DRAW);

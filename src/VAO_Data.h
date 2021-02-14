@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-#include "utils/ArrayManager.h"
+#include "utils/ArrayPool.h"
 
 // These macros are only valid for a normal map skeletal vertex
 #define POSITION_LOCATION 0
@@ -73,5 +73,5 @@ struct SkeletalVertex
 };
 
 void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<DefaultVertex> vertices, std::vector<uint32_t> indices);
-void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ArrayHandle<SkeletalVertex> vertices, std::vector<uint32_t> indices);
+void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ARRAY_HANDLE(SkeletalVertex) vertices, std::vector<uint32_t> indices);
 void DestroyVAO(uint32_t* VAO);

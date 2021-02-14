@@ -166,11 +166,11 @@ void UpdateSkinningUniforms(glm::mat4 world, Camera camera, Skeleton skeleton, S
     glUniformMatrix4fv(uniforms.perspective_matrix, 1, GL_FALSE, &ProjectionMatrix(camera.projection)[0][0]);
 
     // It is important that the size of the bones doesn't supersede MAX_BONES
-    uint32_t numSkeletonBones = GetArraySize<>(skeleton.bones);
+    size_t numSkeletonBones = GET_ARRAY_SIZE(skeleton.bones);
     assert(numSkeletonBones <= MAX_BONES);
     for (int i = 0; i < numSkeletonBones; i++)
     {
-        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.bones[i][0][0]);
+        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &(*skeleton.bones)[i][0][0]);
     }
 }
 
@@ -181,10 +181,10 @@ void UpdateSkinningUniformsOrtho(glm::mat4 world, OrthoCamera camera, Skeleton s
     glUniformMatrix4fv(uniforms.perspective_matrix, 1, GL_FALSE, &OrthoProjectionMatrix(camera.projection)[0][0]);
 
     // It is important that the size of the bones doesn't supersede MAX_BONES
-    uint32_t numSkeletonBones = GetArraySize<>(skeleton.bones);
+    size_t numSkeletonBones = GET_ARRAY_SIZE(skeleton.bones);
     assert(numSkeletonBones <= MAX_BONES);
-    for (int i = 0; i < numSkeletonBones; i++) {
-        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &skeleton.bones[i][0][0]);
+    for (size_t i = 0; i < numSkeletonBones; i++) {
+        glUniformMatrix4fv(uniforms.bone_location[i], 1, GL_FALSE, &(*skeleton.bones)[i][0][0]);
     }
 }
 

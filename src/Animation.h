@@ -4,7 +4,7 @@
 #include <vector>
 
 #include "Transform.h"
-#include <utils/ArrayManager.h>
+#include <utils/ArrayPool.h>
 
 enum AnimationFlags {
     NONE = 0,
@@ -15,8 +15,8 @@ enum AnimationFlags {
 
 /// Maps values of a bone animation component, e.g. scale, to key frames.
 struct BoneAnimKeys {
-    ArrayHandle<glm::vec3> values;
-    ArrayHandle<float> key_frames;
+    ARRAY_HANDLE(glm::vec3) values;
+    ARRAY_HANDLE(float) key_frames;
 };
 
 struct BoneAnimation {
@@ -31,14 +31,14 @@ struct BoneAnimation {
 
 struct Skeleton {
     /// Iput for writing to bones.
-    ArrayHandle<BoneAnimation> bone_anims;
+    ARRAY_HANDLE(BoneAnimation) bone_anims;
     
     /// Start values of bone transform components, in case a
     /// component doesn't animate for a given bone.
-    ArrayHandle<Transform> bone_transforms;
+    ARRAY_HANDLE(Transform) bone_transforms;
 
     /// Output.
-    ArrayHandle<glm::mat4> bones;
+    ARRAY_HANDLE(glm::mat4) bones;
 
     // Animation duration in seconds.
     float animation_duration;
@@ -47,9 +47,9 @@ struct Skeleton {
 /// Maps skeletons to vertex array objects. This structure should not be in an array.
 /// There should only exist one instance of this structure in the application.
 struct Skeletons {
-    ArrayHandle<Skeleton> skeletons_array;
-    ArrayHandle<uint32_t> vao_array;
-    ArrayHandle<uint32_t> element_buffer_sizes;
+    ARRAY_HANDLE(Skeleton) skeletons_array;
+    ARRAY_HANDLE(uint32_t) vao_array;
+    ARRAY_HANDLE(uint32_t) element_buffer_sizes;
 };
 
 void AnimateBones(float animationTime, Skeleton skeleton);

@@ -10,15 +10,16 @@
 #include "Input.h"
 #include "LoopManagement.h"
 #include "enums.h"
-#include "utils/ArrayManager.h"
+#include "utils/ArrayPool.h"
 
-#define START_CAPACITY 10
+// TODO: If we let the system dynamically allocate and reallocate the whole system breaks. Look at a solution.
+#define START_CAPACITY 200
 
 int main(int argc, char** argv)
 {
     // The display and openGL are instantiated
     InitializeDisplay(WIDTH, HEIGHT, "Data Oriented Attempt");
-    InitArrayManager(START_CAPACITY);
+    InitArrayPool(START_CAPACITY);
 
     // To calculate the time that passes every frame, e.g. deltaTime
     float now = SDL_GetTicks();
@@ -39,9 +40,9 @@ int main(int argc, char** argv)
     UserSuper user;
     user.animation_timer = 0;
 
-    ArrayHandle<Skeleton> skeletonArray = AddArray<Skeleton>(SkeletonTypes::num_skeletons);
-    ArrayHandle<uint32_t> vaoArray = AddArray<uint32_t>(SkeletonTypes::num_skeletons);
-    ArrayHandle<uint32_t> elementBufferSizes = AddArray<uint32_t>(SkeletonTypes::num_skeletons);
+    ARRAY_HANDLE(struct Skeleton) skeletonArray = GET_ARRAY_HANDLE(struct Skeleton, SkeletonTypes::num_skeletons);
+    ARRAY_HANDLE(uint32_t) vaoArray = GET_ARRAY_HANDLE(uint32_t, SkeletonTypes::num_skeletons);
+    ARRAY_HANDLE(uint32_t) elementBufferSizes = GET_ARRAY_HANDLE(uint32_t, SkeletonTypes::num_skeletons);
     struct Skeletons skeletons = { skeletonArray, vaoArray, elementBufferSizes };
 
     // The starting state is set
@@ -69,8 +70,8 @@ int main(int argc, char** argv)
             break;
         case scene1:
             UpdateUser(&user, &camera.view, delta_time);
-            AnimateBones(user.animation_timer, skeletons.skeletons_array[avatar]);
-            SetUserGraphicsData(programs[skinning], camera, user.user_transform, skeletons.skeletons_array[avatar]);
+            AnimateBones(user.animation_timer, *skeletons.skeletons_array[avatar]);
+            SetUserGraphicsData(programs[skinning], camera, user.user_transform, *skeletons.skeletons_array[avatar]);
             // Arbitrary phong material
             PhongMaterial avatarPhong = {
                 { 0.1f, 0.1f, 0.0f },
@@ -79,7 +80,7 @@ int main(int argc, char** argv)
                 1000
             };
             uint32_t program = programs[skinning].program_type.defaultProgram.program;
-            DrawPhongVAO(program, skeletons.vao_array[avatar], skeletons.element_buffer_sizes[avatar], avatarPhong);
+            DrawPhongVAO(program, *skeletons.vao_array[avatar], *skeletons.element_buffer_sizes[avatar], avatarPhong);
             break;
         }
 
