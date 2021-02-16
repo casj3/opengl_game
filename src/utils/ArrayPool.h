@@ -9,8 +9,9 @@
 
 #include "Array.h"
 
-#define NUM_NEW_ARRAYS 50
-#define NUM_NEW_ELEMENTS 50
+#ifndef POOL_CAPACITY
+#define POOL_CAPACITY 50
+#endif
 
 /// A pointer to a pointer to an element of the designated type.
 /// Can be used for casting to and from array handles retrieved by
@@ -40,7 +41,7 @@
 ///
 /// @returns the size of the array.
 #define GET_ARRAY_SIZE(handle) \
-    GetArraySize((void**) handle)
+    GetArraySize((void**) handle, sizeof(**handle))
 
 /// Couples an array handle with a counter.
 struct Append_Array {
@@ -56,15 +57,15 @@ struct alignas(Append_Array) T_Append_Array {
     size_t counter = 0;
 };
 
-/// Initializes the array pool. Must be called before any of the other declared functions in the header.
+/// Initializes the array pools. Must be called before any of the other declared functions in the header.
 ///
-/// @param capacity The number of arrays to pre-allocate space for.
-void InitArrayPool(size_t capacity);
+/// @param numArrayPools The number of array pools to allocate space for.
+void InitArrayPools(const size_t numArrayPools);
 
 /// Get an array from the array pool.
 ///
 /// @param size The size in elements of the new array.
-/// @param typeSize The size of the type of elements.
+/// @param typeSize The size in bytes of the elements type.
 ///
 /// @returns the handle to the array, i.e. the index in the array pool.
 void** GetArrayHandle(size_t size, size_t typeSize);
@@ -79,12 +80,15 @@ void ReturnArray(void** handle);
 ///
 /// @param handle The handle to the array.
 /// @param elementsToAdd The number of slots to expand the capacity of the array with.
-void ResizeArray(void** handle, size_t elementsToAdd);
+/// @param typeSize The size in bytes of the elements type.
+void ResizeArray(void** handle, size_t elementsToAdd, size_t typeSize);
 
 /// @param handle The handle to the array.
 ///
+/// @param typeSize The size in bytes of the elements type.
+///
 /// @returns the size of the array.
-const size_t GetArraySize(void** handle);
+const size_t GetArraySize(void** handle, size_t typeSize);
 
 /// Get an appending array of a template type.
 ///
@@ -100,7 +104,8 @@ T_Append_Array<T> TGetAppendArray(size_t size) {
 ///
 /// @param array The appending array.
 /// @param element The value to assign the element.
-void AppendElement(Append_Array* array, void* element);
+/// @param typeSize The size in bytes of the elements type.
+void AppendElement(Append_Array* array, void* element, size_t typeSize);
 
 /// Appends a value to an appending array of a template type.
 ///
@@ -108,14 +113,15 @@ void AppendElement(Append_Array* array, void* element);
 /// @param element The value to assign the element.
 template <typename T>
 void TAppendElement(T_Append_Array<T>* array, T element) {
-    AppendElement((Append_Array*) array, (void*) &element);
+    AppendElement((Append_Array*) array, (void*) &element, sizeof(T));
 }
 
 /// Replaces the specified element with the back element and decrements the appended elements count of the array.
 ///
 /// @param array The Append_Array.
 /// @param elementId The id of the element to replace with the back element.
-void ReplaceWithBack(Append_Array* array, size_t elementId);
+/// @param typeSize The size in bytes of the elements type.
+void ReplaceWithBack(Append_Array* array, size_t elementId, size_t typeSize);
 
 /// @param array The Append_Array.
 /// @returns the id of the last appended element in the Append_Array. A negative value is returned if nothing has been appended.

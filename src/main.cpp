@@ -11,15 +11,15 @@
 #include "LoopManagement.h"
 #include "enums.h"
 #include "utils/ArrayPool.h"
+#include "utils/Print.h"
 
-// TODO: If we let the system dynamically allocate and reallocate the whole system breaks. Look at a solution.
-#define START_CAPACITY 200
+#define NUM_POOLS 2
 
 int main(int argc, char** argv)
 {
     // The display and openGL are instantiated
     InitializeDisplay(WIDTH, HEIGHT, "Data Oriented Attempt");
-    InitArrayPool(START_CAPACITY);
+    InitArrayPools(NUM_POOLS);
 
     // To calculate the time that passes every frame, e.g. deltaTime
     float now = SDL_GetTicks();
@@ -61,14 +61,18 @@ int main(int argc, char** argv)
         CheckInput(&currentUpdate, &lastUpdate, &mouseWheel);
 
         switch (state) {
-        case initializeScene1:
+        case initializeScene1: {
+            unsigned int before = SDL_GetTicks();
             InitializeScene1(&programs[skinning], &skeletons, &user);
-
+            unsigned int after = SDL_GetTicks();
+            unsigned int sceneInitDelta = after - before;
+            Print("%u to initialize scene\n", sceneInitDelta);
             // All is well for the first scene to start
             state = scene1;
 
             break;
-        case scene1:
+        }
+        case scene1: {
             UpdateUser(&user, &camera.view, delta_time);
             AnimateBones(user.animation_timer, *skeletons.skeletons_array[avatar]);
             SetUserGraphicsData(programs[skinning], camera, user.user_transform, *skeletons.skeletons_array[avatar]);
@@ -81,7 +85,9 @@ int main(int argc, char** argv)
             };
             uint32_t program = programs[skinning].program_type.defaultProgram.program;
             DrawPhongVAO(program, *skeletons.vao_array[avatar], *skeletons.element_buffer_sizes[avatar], avatarPhong);
+            Print("%ums to update\n", sceneInitDelta);
             break;
+        }
         }
 
         UpdateDisplay();
