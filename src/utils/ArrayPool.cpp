@@ -4,15 +4,22 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include <intrin.h>
 #include "Animation.h"
 #include "LoadVAO.h"
 #include "Transform.h"
 #include "VAO_Data.h"
 #include "MathFunctions.h"
 
-#define ARRAY_SIZE_FRACTION 0.5f
+#define INT32_BIT_SIZE (sizeof(int32_t) * 8)
 
+#define ARRAY_SIZE_FRACTION 0.5f
 #define ALLOC_TOGETHER 0
+
+struct Array_Markers {
+    int32_t* free_spots;
+    size_t size;
+};
 
 struct Array_Pool {
     void** arrays;
@@ -22,10 +29,99 @@ struct Array_Pool {
     size_t* capacities;
 };
 
-static ArrayMarkers array_markers;
+static Array_Markers array_markers;
 static size_t num_arrays;
-
 static Array_Pool* array_pools;
+
+// Begin Array_Markers functions
+
+void AddElement(void* array, void* element, size_t freeIndex, size_t typeSize) {
+    memcpy((char*) array + (freeIndex * typeSize), element, typeSize);
+}
+
+void ReplaceWithBack(void* array, size_t replaceIndex, size_t backIndex, size_t typeSize) {
+    // Overwrite it with the last element, we don't want to iterate through empty slots.
+    memcpy((char*) array + (replaceIndex * typeSize),(char*) array + (backIndex * typeSize), typeSize);
+}
+size_t GetArrayMarkersArraySize(size_t numElements) {
+    size_t numFullRows = numElements / INT32_BIT_SIZE;
+    // In case we need more or less bits than what is divisible by the bit size
+    size_t partRow = (numElements % INT32_BIT_SIZE) > 0;
+    return numFullRows + partRow;
+}
+
+Array_Markers NewArrayMarkers(size_t numElements) {
+    size_t size = GetArrayMarkersArraySize(numElements);
+    return { (int32_t*)calloc(size, sizeof(int32_t)), size };
+}
+
+/// Returns a resized array markers array if the current one is not large enough.
+/// Handles new indeterminate values in case of realloc. Do not cast return value to anything.
+///
+/// @param arrayMarkers    The flag array of allocated and free spots in a corresponding, non-flag array.
+/// @param numElements     The number of elements in the new int array.
+///                        This value should always be larger than the current size.
+Array_Markers ResizeArrayMarkers(Array_Markers arrayMarkers, size_t numElements) {
+    int32_t* newMarkers = (int32_t*)realloc(arrayMarkers.free_spots, sizeof(int32_t) * numElements);
+
+    // Overwrite the indeterminate value produced by realloc with 0, as it's meant to be.
+    memset(newMarkers + arrayMarkers.size, 0, sizeof(int32_t) * (numElements - arrayMarkers.size));
+
+    return { newMarkers, numElements};
+}
+
+size_t GetFreeIndex(Array_Markers* arrayMarkersPtr, size_t from) {
+    Array_Markers arrayMarkers = *arrayMarkersPtr;
+
+    // Flip all bits
+    int32_t ignoreBits = ~0;
+    // Shift the bits such that the bits before the 'from' bit are set as taken.
+    ignoreBits = ~(ignoreBits << (from % INT32_BIT_SIZE));
+    // If flipping all bits is 0 then all spots are marked busy.
+    size_t busySpotRow = from/INT32_BIT_SIZE;
+    while (busySpotRow < arrayMarkers.size && ~(arrayMarkers.free_spots[busySpotRow] | ignoreBits) == 0) {
+        // Reset the ignore bits, they're only relevant for one row.
+        ignoreBits = 0;
+        busySpotRow++;
+    }
+
+    // If there is no free index in the available rows, enlarge the markers array.
+    if (busySpotRow >= arrayMarkers.size) {
+        arrayMarkers = ResizeArrayMarkers(arrayMarkers, busySpotRow + 1);
+        *arrayMarkersPtr = arrayMarkers;
+    }
+
+    // Include the free_spot bits.
+    int32_t freeBit = arrayMarkers.free_spots[busySpotRow] | ignoreBits;
+    // Get the rightmost unset bit to find the first available not busy spot
+    freeBit = (freeBit + 1) & ~freeBit;
+    // int32_t freeBit = (arrayMarkers.free_spots[busySpotRow] + 1) & ~arrayMarkers.free_spots[busySpotRow];
+
+    unsigned long index;
+    // 2019-08-04: Currently available for these platforms - x86, ARM, x64
+    // If _BitScanReverse becomes outdated we could always use log2
+    _BitScanReverse(&index, freeBit);
+
+    return index + busySpotRow * INT32_BIT_SIZE;
+}
+
+int GetBitIndex(size_t index) {
+    return 1 << (index % INT32_BIT_SIZE);
+}
+
+void TakeFreeSpot(Array_Markers arrayMarkers, size_t freeIndex) {
+    // Mark the bit representing the element as busy
+    arrayMarkers.free_spots[freeIndex/INT32_BIT_SIZE] |= GetBitIndex(freeIndex);
+}
+
+void ReleaseBusySpot(Array_Markers arrayMarkers, size_t releaseIndex) {
+    // Mark the bit representing the element as not busy.
+    arrayMarkers.free_spots[releaseIndex/INT32_BIT_SIZE] &= ~GetBitIndex(releaseIndex);
+}
+
+// End Array_Markers functions
+
+// Begin Array_Pool functions
 
 void InitArrayPools(const size_t numArrayPools) {
     array_markers = NewArrayMarkers(numArrayPools * POOL_CAPACITY);
@@ -161,6 +257,10 @@ const size_t GetArraySize(void** handle, size_t typeSize) {
     return array_pools[poolIndex].sizes[arrayId] / typeSize;
 }
 
+// End Array_Pool functions
+
+// Begin Append_Array functions
+
 void AppendElement(Append_Array* array, void* element, size_t typeSize) {
     size_t poolIndex = GetPoolIndex(array->handle);
     size_t arrayId = array->handle - array_pools[poolIndex].arrays;
@@ -180,3 +280,5 @@ void ReplaceWithBack(Append_Array* array, size_t elementId, size_t typeSize) {
     }
     array->counter--;
 }
+
+// End Append_Array functions

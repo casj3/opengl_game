@@ -7,10 +7,8 @@
 
 #include <glm/glm.hpp>
 
-#include "Array.h"
-
 #ifndef POOL_CAPACITY
-#define POOL_CAPACITY 50
+#define POOL_CAPACITY 200
 #endif
 
 /// A pointer to a pointer to an element of the designated type.

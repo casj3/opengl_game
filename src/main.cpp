@@ -85,7 +85,6 @@ int main(int argc, char** argv)
             };
             uint32_t program = programs[skinning].program_type.defaultProgram.program;
             DrawPhongVAO(program, *skeletons.vao_array[avatar], *skeletons.element_buffer_sizes[avatar], avatarPhong);
-            Print("%ums to update\n", sceneInitDelta);
             break;
         }
         }

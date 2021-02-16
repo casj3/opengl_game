@@ -14,7 +14,6 @@ src/utils/LibraryTranslations.cpp
 src/LoadVAO.cpp
 src/LoopManagement.cpp
 src/utils/MathFunctions.cpp
-src/utils/Array.cpp
 src/utils/ArrayPool.cpp
 src/Shader.cpp
 src/Transform.cpp
@@ -31,7 +30,6 @@ src/utils/LibraryTranslations.h
 src/LoadVAO.h
 src/LoopManagement.h
 src/utils/MathFunctions.h
-src/utils/Array.h
 src/utils/ArrayPool.h
 src/Shader.h
 src/Transform.h
