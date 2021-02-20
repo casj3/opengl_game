@@ -2,16 +2,16 @@
 
 #include <SDL.h>
 
-#include "Display.h"
-#include "Camera.h"
-#include "Shader.h"
-#include "User.h"
-#include "Animation.h"
-#include "Input.h"
-#include "LoopManagement.h"
+#include "window.h"
+#include "camera.h"
+#include "gpu_program.h"
+#include "player.h"
+#include "animate.h"
+#include "input.h"
+#include "scene.h"
 #include "enums.h"
-#include "utils/ArrayPool.h"
-#include "utils/Print.h"
+#include "utils/array_pool.h"
+#include "utils/print.h"
 
 #define NUM_POOLS 2
 

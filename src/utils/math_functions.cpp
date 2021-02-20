@@ -1,11 +1,11 @@
-#include "MathFunctions.h"
+#include "math_functions.h"
 
 float VecDistance(glm::vec3 pos1, glm::vec3 pos2)
 {
-	glm::vec3 dist;
-	dist.x = pos1.x - pos2.x;
-	dist.y = pos1.y - pos2.y;
-	return length(dist);
+    glm::vec3 dist;
+    dist.x = pos1.x - pos2.x;
+    dist.y = pos1.y - pos2.y;
+    return length(dist);
 }
 
 ul_double GetFraction(ul_double numerator, ul_double denominator) {
@@ -14,33 +14,33 @@ ul_double GetFraction(ul_double numerator, ul_double denominator) {
 
 void ComputeTangentSpace(NormalMapVertex* v0, NormalMapVertex* v1, NormalMapVertex* v2)
 {
-	// Lengyels method
-	glm::vec3 tangent, binormal, D, E;
-	glm::vec2 F, G;
+    // Lengyels method
+    glm::vec3 tangent, binormal, D, E;
+    glm::vec2 F, G;
 
-	D = v1->position - v0->position;
-	E = v2->position - v0->position;
+    D = v1->position - v0->position;
+    E = v2->position - v0->position;
 
-	F = v1->tex_coords - v0->tex_coords;
-	G = v2->tex_coords - v0->tex_coords;
+    F = v1->tex_coords - v0->tex_coords;
+    G = v2->tex_coords - v0->tex_coords;
 
-	glm::mat2 FG;
-	FG[0][0] = F.x;
-	FG[1][0] = F.y;
-	FG[0][1] = G.x;
-	FG[1][1] = G.y;
+    glm::mat2 FG;
+    FG[0][0] = F.x;
+    FG[1][0] = F.y;
+    FG[0][1] = G.x;
+    FG[1][1] = G.y;
 
-	FG = inverse(FG);
+    FG = inverse(FG);
 
-	tangent = { FG[0][0] * D.x + FG[1][0] * E.x, FG[0][0] * D.y + FG[1][0] * E.y, FG[0][0] * D.z + FG[1][0] * E.z };
-	binormal = { FG[0][1] * D.x + FG[1][1] * E.x, FG[0][1] * D.y + FG[1][1] * E.y, FG[0][1] * D.z + FG[1][1] * E.z };
+    tangent = { FG[0][0] * D.x + FG[1][0] * E.x, FG[0][0] * D.y + FG[1][0] * E.y, FG[0][0] * D.z + FG[1][0] * E.z };
+    binormal = { FG[0][1] * D.x + FG[1][1] * E.x, FG[0][1] * D.y + FG[1][1] * E.y, FG[0][1] * D.z + FG[1][1] * E.z };
 
-	v0->tangent += tangent;
-	v1->tangent += tangent;
-	v2->tangent += tangent;
-	v0->binormal += binormal;
-	v1->binormal += binormal;
-	v2->binormal += binormal;
+    v0->tangent += tangent;
+    v1->tangent += tangent;
+    v2->tangent += tangent;
+    v0->binormal += binormal;
+    v1->binormal += binormal;
+    v2->binormal += binormal;
 }
 
 bool CircleCollision(glm::vec3 pos1, glm::vec3 pos2, float radius1, float radius2)

@@ -5,9 +5,9 @@
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-#include "Animation.h"
-#include <utils/ArrayPool.h>
-#include "VAO_Data.h"
+#include "animate.h"
+#include "utils/array_pool.h"
+#include "gpu_store.h"
 
 // Everything we need is stored in the scene object - the retrieved data can be used as arguments for the other functions
 const aiScene* ImportScene(Assimp::Importer* importer, std::string path);

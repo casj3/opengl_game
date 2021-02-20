@@ -1,15 +1,11 @@
 
-#include "ArrayPool.h"
+#include "array_pool.h"
 
 #include <assert.h>
 #include <stdbool.h>
 
 #include <intrin.h>
-#include "Animation.h"
-#include "LoadVAO.h"
-#include "Transform.h"
-#include "VAO_Data.h"
-#include "MathFunctions.h"
+#include "math_functions.h"
 
 #define INT32_BIT_SIZE (sizeof(int32_t) * 8)
 
@@ -43,6 +39,7 @@ void ReplaceWithBack(void* array, size_t replaceIndex, size_t backIndex, size_t 
     // Overwrite it with the last element, we don't want to iterate through empty slots.
     memcpy((char*) array + (replaceIndex * typeSize),(char*) array + (backIndex * typeSize), typeSize);
 }
+
 size_t GetArrayMarkersArraySize(size_t numElements) {
     size_t numFullRows = numElements / INT32_BIT_SIZE;
     // In case we need more or less bits than what is divisible by the bit size

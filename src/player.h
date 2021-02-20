@@ -2,9 +2,9 @@
 
 #include <glm/glm.hpp>
 
-#include "Input.h"
-#include "Camera.h"
-#include "Transform.h"
+#include "input.h"
+#include "camera.h"
+#include "transform.h"
 
 struct RotationIncrementers
 {

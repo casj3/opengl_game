@@ -3,8 +3,8 @@
 #include <stdint.h>
 
 #include <glm/glm.hpp>
-#include "VAO_Data.h"
-#include "utils/MathFunctions.h"
+#include "gpu_store.h"
+#include "utils/math_functions.h"
 
 struct Quad
 {

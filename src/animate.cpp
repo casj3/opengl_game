@@ -1,9 +1,9 @@
 
-#include "Animation.h"
+#include "animate.h"
 
 #include <math.h>
 
-#include "utils/Print.h"
+#include "utils/print.h"
 
 glm::vec3 GetAnimatedValue(float animationTime, BoneAnimKeys boneAnimKeys) {
     size_t numKeyFrames = GET_ARRAY_SIZE(boneAnimKeys.key_frames);

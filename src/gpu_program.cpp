@@ -1,12 +1,11 @@
-#include "Shader.h"
+#include "gpu_program.h"
 
 #include <Windows.h>
 #include <fstream>
-
 #include <GL/glew.h>
 #include <assert.h>
 
-#include "Camera.h"
+#include "camera.h"
 
 void CheckShaderError(uint32_t shader, uint32_t flag, bool isProgram);
 uint32_t CreateShader(const char* source, uint32_t shaderType);

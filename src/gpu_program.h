@@ -5,8 +5,8 @@
 
 #include <glm/glm.hpp>
 
-#include "Animation.h"
-#include "Camera.h"
+#include "animate.h"
+#include "camera.h"
 
 #define MAX_BONES 25
 
@@ -47,16 +47,14 @@ struct SkinningUniforms
 };
 
 // A union only takes up space for its most recently assigned variable, which makes it very useful in the superstructure to come
-union Uniforms
-{
+union Uniforms {
     SkinningUniforms skinningUniforms;
     DefaultUniforms defaultUniforms;
 };
 
 // TODO: Remove the union use everywhere. It's unnecessarily confusing and weird.
 // The superstructure is used to group arguments meant for a specific module - in this case the shader/program one
-struct ProgramSuper
-{
+struct ProgramSuper {
     Uniforms uniforms_type;
     Program program_type;
 };

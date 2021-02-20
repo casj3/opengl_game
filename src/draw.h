@@ -2,13 +2,12 @@
 
 #include <stdint.h>
 
-#include "VAO_Data.h"
+#include "gpu_store.h"
 
 // OBS! This is being reconfigured for the sake of debugging
 // 2019-07-27:
 // I don't remember what I meant by that.
-struct DrawUnitsTextured
-{
+struct DrawUnitsTextured {
     std::vector<Textures> textures;
     std::vector<uint32_t> vertex_array_objects;
     std::vector<uint32_t> indices_size;

@@ -1,4 +1,4 @@
-#include "VAO_Data.h"
+#include "gpu_store.h"
 
 #include <GL/glew.h>
 

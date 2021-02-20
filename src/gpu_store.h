@@ -6,7 +6,7 @@
 #include <vector>
 #include <string>
 
-#include "utils/ArrayPool.h"
+#include "utils/array_pool.h"
 
 // These macros are only valid for a normal map skeletal vertex
 #define POSITION_LOCATION 0

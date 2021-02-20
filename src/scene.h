@@ -2,11 +2,11 @@
 
 #include <stdint.h>
 
-#include "User.h"
-#include "Draw_VAO.h"
-#include "Shader.h"
-#include "LoadVAO.h"
-#include "Animation.h"
+#include "player.h"
+#include "draw.h"
+#include "gpu_program.h"
+#include "load.h"
+#include "animate.h"
 
 void InitializeScene1(ProgramSuper* program, struct Skeletons* skeletons, UserSuper* user);
 

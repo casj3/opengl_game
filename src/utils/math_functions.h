@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/quaternion.hpp>
-#include "VAO_Data.h"
+#include "gpu_store.h"
 
 #define degreesToRadians(x) x * (3.141592f/180.0f)
 

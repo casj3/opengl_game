@@ -1,14 +1,14 @@
-#include "LoadVAO.h"
+#include "load.h"
 
 #include <cstring>
 
 #include <GL/glew.h>
 #include <glm/gtx/quaternion.hpp>
 #include <assimp/postprocess.h>
-#include "utils/LibraryTranslations.h"
-#include "Transform.h"
-#include "utils/Print.h"
-#include "utils/Pair.h"
+#include "utils/lib_convert.h"
+#include "transform.h"
+#include "utils/print.h"
+#include "utils/pair.h"
 
 // TODO: Use a newer version of stb_image.h
 #define STB_IMAGE_IMPLEMENTATION

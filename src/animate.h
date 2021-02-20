@@ -1,10 +1,9 @@
 #pragma once
 
 #include <glm/glm.hpp>
-#include <vector>
 
-#include "Transform.h"
-#include <utils/ArrayPool.h>
+#include "transform.h"
+#include "utils/array_pool.h"
 
 enum AnimationFlags {
     NONE = 0,

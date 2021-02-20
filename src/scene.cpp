@@ -1,19 +1,18 @@
-#include "LoopManagement.h"
+#include "scene.h"
 
 #include <vector>
 
 #include <glm/glm.hpp>
 
-#include <utils/ArrayPool.h>
-#include "utils/MathFunctions.h"
-#include "VAO_Data.h"
+#include <utils/array_pool.h>
+#include "utils/math_functions.h"
+#include "gpu_store.h"
 #include "enums.h"
 
 // Global variables which are declared as extern in different header files
 Input currentUpdate;
 Input lastUpdate;
 MouseWheel mouseWheel;
-// TODO: Revise how this is being used, most of the time the process exits heap allocation errors pop up.
 Assimp::Importer importer;
 
 // TODO: Can't load scenes like this.
