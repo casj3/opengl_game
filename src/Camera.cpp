@@ -12,9 +12,9 @@ glm::mat4 ProjectionMatrix(Projection projection)
     return glm::perspective(glm::radians(projection.fov), projection.aspect, projection.z_near, projection.z_far);
 }
 
-glm::mat4 OrthoProjectionMatrix(OrthoProjection projection)
+glm::mat4 OrthoProjectionMatrix(Ortho_Projection projection)
 {
-    return glm::ortho(0.0f, (float)WIDTH, 0.0f, float(HEIGHT), projection.z_near, projection.z_far);
+    return glm::ortho(0.0f, WIN_WIDTH, 0.0f, WIN_HEIGHT, projection.z_near, projection.z_far);
 }
 
 // The resulting float is meant to be added to the z component of the view position instanced at a higher level
@@ -25,7 +25,7 @@ float Track(float trackValue, float* slideTimer, float deltaTime)
 }
 
 // This function only works in co-operation with Track - both use the same slideTimer instance
-float Slide(SlideProperties* slideProperties, float deltaTime)
+float Slide(Slide_Properties* slideProperties, float deltaTime)
 {
     slideProperties->slide_timer += deltaTime;
 

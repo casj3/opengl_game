@@ -19,6 +19,7 @@ src/gpu_program.cpp
 src/transform.cpp
 src/player.cpp
 src/gpu_store.cpp
+src/window.cpp
 )
 
 SET(HEADERS
@@ -35,6 +36,7 @@ src/gpu_program.h
 src/transform.h
 src/player.h
 src/gpu_store.h
+src/window.h
 )
 
 include_directories(

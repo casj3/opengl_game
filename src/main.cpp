@@ -18,7 +18,7 @@
 int main(int argc, char** argv)
 {
     // The display and openGL are instantiated
-    InitializeDisplay(WIDTH, HEIGHT, "Data Oriented Attempt");
+    InitializeDisplay("Data Oriented Attempt");
     InitArrayPools(NUM_POOLS);
 
     // To calculate the time that passes every frame, e.g. deltaTime
@@ -30,25 +30,25 @@ int main(int argc, char** argv)
     Camera camera;
 
     // Containers of program data used to create programs constituted of shaders
-    ProgramSuper programs[ProgramTypes::num_programs];
+    Program_Super programs[Program_Types::NUM_PROGRAMS];
 
     // Draw units are grouped by their use of a certain draw function and there are different kind of draw
     //units depending on the materials and textures they use. This one uses textures.
-    DrawUnitsTextured skeletalDrawUnits;
+    Draw_Units_Textured skeletal_draw_units;
 
     // The user super structure
-    UserSuper user;
+    User_Super user;
     user.animation_timer = 0;
 
-    ARRAY_HANDLE(struct Skeleton) skeletonArray = GET_ARRAY_HANDLE(struct Skeleton, SkeletonTypes::num_skeletons);
-    ARRAY_HANDLE(uint32_t) vaoArray = GET_ARRAY_HANDLE(uint32_t, SkeletonTypes::num_skeletons);
-    ARRAY_HANDLE(uint32_t) elementBufferSizes = GET_ARRAY_HANDLE(uint32_t, SkeletonTypes::num_skeletons);
+    ARRAY_HANDLE(struct Skeleton) skeletonArray = GET_ARRAY_HANDLE(struct Skeleton, Skeleton_Types::NUM_SKELETONS);
+    ARRAY_HANDLE(uint32_t) vaoArray = GET_ARRAY_HANDLE(uint32_t, Skeleton_Types::NUM_SKELETONS);
+    ARRAY_HANDLE(uint32_t) elementBufferSizes = GET_ARRAY_HANDLE(uint32_t, Skeleton_Types::NUM_SKELETONS);
     struct Skeletons skeletons = { skeletonArray, vaoArray, elementBufferSizes };
 
     // The starting state is set
-    State state = initializeScene1;
+    State state = State::INIT_SCENE_1;
 
-    while (!currentUpdate.ESCAPE)
+    while (!current_update.esc)
     {
         ClearDisplay(0.3f, 0.3f, 0.3f, 0.3f);
 
@@ -58,33 +58,39 @@ int main(int argc, char** argv)
         delta_time = (now - last) / 1000;
 
         // Our input units need to be assigned values every loop
-        CheckInput(&currentUpdate, &lastUpdate, &mouseWheel);
+        CheckInput(&current_update, &last_update, &mouse_wheel);
 
         switch (state) {
-        case initializeScene1: {
+        case State::INIT_SCENE_1: {
             unsigned int before = SDL_GetTicks();
-            InitializeScene1(&programs[skinning], &skeletons, &user);
+            InitializeScene1(&programs[Program_Types::SKINNING], &skeletons, &user);
             unsigned int after = SDL_GetTicks();
-            unsigned int sceneInitDelta = after - before;
-            Print("%u to initialize scene\n", sceneInitDelta);
+            unsigned int init_delta = after - before;
+            Print("%u to initialize scene\n", init_delta);
             // All is well for the first scene to start
-            state = scene1;
+            state = State::SCENE_1;
 
             break;
         }
-        case scene1: {
+        case State::SCENE_1: {
             UpdateUser(&user, &camera.view, delta_time);
-            AnimateBones(user.animation_timer, *skeletons.skeletons_array[avatar]);
-            SetUserGraphicsData(programs[skinning], camera, user.user_transform, *skeletons.skeletons_array[avatar]);
+            AnimateBones(user.animation_timer, *skeletons.skeletons_array[Skeleton_Types::AVATAR]);
+            SetUserGraphicsData(programs[Program_Types::SKINNING],
+                                camera,
+                                user.user_transform,
+                                *skeletons.skeletons_array[Skeleton_Types::AVATAR]);
             // Arbitrary phong material
-            PhongMaterial avatarPhong = {
+            Phong_Material avatarPhong = {
                 { 0.1f, 0.1f, 0.0f },
                 { 0.5f, 0.5f, 0.0f },
                 { 1, 1, 1 },
                 1000
             };
-            uint32_t program = programs[skinning].program_type.defaultProgram.program;
-            DrawPhongVAO(program, *skeletons.vao_array[avatar], *skeletons.element_buffer_sizes[avatar], avatarPhong);
+            uint32_t program = programs[Program_Types::SKINNING].program_type.default_program.program;
+            DrawPhongVAO(program,
+                         *skeletons.vao_array[Skeleton_Types::AVATAR],
+                         *skeletons.element_buffer_sizes[Skeleton_Types::AVATAR],
+                         avatarPhong);
             break;
         }
         }

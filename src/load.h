@@ -12,7 +12,7 @@
 // Everything we need is stored in the scene object - the retrieved data can be used as arguments for the other functions
 const aiScene* ImportScene(Assimp::Importer* importer, std::string path);
 
-std::vector<DefaultVertex> LoadVertices(aiMesh* mesh);
+std::vector<Default_Vertex> LoadVertices(aiMesh* mesh);
 
 /// Loads a skeleton from a scene. Assumes a scene to skeleton correspondence, i.e. one skeleton per scene.
 ///
@@ -20,7 +20,7 @@ std::vector<DefaultVertex> LoadVertices(aiMesh* mesh);
 /// @param[out] outVerticies  Is assigned the handle to the skeleton vertex data.
 ///
 /// @returns the skeleton.
-Skeleton LoadSkeleton(const aiScene* scene, ARRAY_HANDLE(SkeletalVertex)* outVertices);
+Skeleton LoadSkeleton(const aiScene* scene, ARRAY_HANDLE(Skeletal_Vertex)* outVertices);
 std::vector<uint32_t> LoadIndices(aiMesh* mesh);
 
 Textures LoadTextures(aiMesh* mesh, const aiScene* scene, std::string path, Textures texturesLoaded);

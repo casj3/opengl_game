@@ -8,14 +8,14 @@
 
 struct Quad
 {
-    DefaultVertex v0, v1, v2, v3;
+    Default_Vertex v0, v1, v2, v3;
 
     uint32_t indices[6];
 };
 
 struct Polygon
 {
-    DefaultVertex v0, v1, v2;
+    Default_Vertex v0, v1, v2;
 
     uint32_t indices[3];
 };

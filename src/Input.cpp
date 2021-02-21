@@ -2,13 +2,13 @@
 
 #include <SDL.h>
 
-void CheckInput(Input* currentUpdate, Input* lastUpdate, MouseWheel* mouseWheel)
+void CheckInput(Input* currentUpdate, Input* lastUpdate, Mouse_Wheel* mouseWheel)
 {
-    lastUpdate->D = currentUpdate->D;
-    lastUpdate->F = currentUpdate->F;
-    lastUpdate->ESCAPE = currentUpdate->ESCAPE;
-    lastUpdate->LEFT_MOUSEBUTTON = currentUpdate->LEFT_MOUSEBUTTON;
-    lastUpdate->RIGHT_MOUSEBUTTON = currentUpdate->RIGHT_MOUSEBUTTON;
+    lastUpdate->d = currentUpdate->d;
+    lastUpdate->f = currentUpdate->f;
+    lastUpdate->esc = currentUpdate->esc;
+    lastUpdate->left_mouse_btn = currentUpdate->left_mouse_btn;
+    lastUpdate->right_mouse_btn = currentUpdate->right_mouse_btn;
 
     mouseWheel->input_received = false;
 
@@ -22,13 +22,13 @@ void CheckInput(Input* currentUpdate, Input* lastUpdate, MouseWheel* mouseWheel)
             switch (event.key.keysym.sym)
             {
             case SDLK_d:
-                currentUpdate->D = true;
+                currentUpdate->d = true;
                 break;
             case SDLK_f:
-                currentUpdate->F = true;
+                currentUpdate->f = true;
                 break;
             case SDLK_ESCAPE:
-                currentUpdate->ESCAPE = true;
+                currentUpdate->esc = true;
                 break;
             }
             break;
@@ -36,10 +36,10 @@ void CheckInput(Input* currentUpdate, Input* lastUpdate, MouseWheel* mouseWheel)
             switch (event.key.keysym.sym)
             {
             case SDLK_d:
-                currentUpdate->D = false;
+                currentUpdate->d = false;
                 break;
             case SDLK_f:
-                currentUpdate->F = false;
+                currentUpdate->f = false;
                 break;
             }
             break;
@@ -47,7 +47,7 @@ void CheckInput(Input* currentUpdate, Input* lastUpdate, MouseWheel* mouseWheel)
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
-                currentUpdate->LEFT_MOUSEBUTTON = true;
+                currentUpdate->left_mouse_btn = true;
                 break;
             }
             break;
@@ -55,10 +55,10 @@ void CheckInput(Input* currentUpdate, Input* lastUpdate, MouseWheel* mouseWheel)
             switch (event.button.button)
             {
             case SDL_BUTTON_LEFT:
-                currentUpdate->LEFT_MOUSEBUTTON = false;
+                currentUpdate->left_mouse_btn = false;
                 break;
             case SDL_BUTTON_RIGHT:
-                currentUpdate->RIGHT_MOUSEBUTTON = false;
+                currentUpdate->right_mouse_btn = false;
                 break;
             }
             break;
@@ -78,7 +78,7 @@ void CheckInput(Input* currentUpdate, Input* lastUpdate, MouseWheel* mouseWheel)
             mouseWheel->input_received = true;
             break;
         case SDL_QUIT:
-            currentUpdate->ESCAPE = true;
+            currentUpdate->esc = true;
             break;
         }
     }

@@ -5,7 +5,7 @@
 #include "transform.h"
 #include "utils/array_pool.h"
 
-enum AnimationFlags {
+enum Anim_Flags {
     NONE = 0,
     POSITION = 1,
     ROTATION = 1 << 1,
@@ -13,15 +13,15 @@ enum AnimationFlags {
 };
 
 /// Maps values of a bone animation component, e.g. scale, to key frames.
-struct BoneAnimKeys {
+struct Bone_Anim_Keys {
     ARRAY_HANDLE(glm::vec3) values;
     ARRAY_HANDLE(float) key_frames;
 };
 
-struct BoneAnimation {
-    BoneAnimKeys bone_position_keys;
-    BoneAnimKeys bone_rotation_keys;
-    BoneAnimKeys bone_scale_keys;
+struct Bone_Animation {
+    Bone_Anim_Keys bone_position_keys;
+    Bone_Anim_Keys bone_rotation_keys;
+    Bone_Anim_Keys bone_scale_keys;
     /// Indicates what transform component keys the bone contains.
     /// The array handle is only valid if the corresponding flag
     /// is set.
@@ -30,7 +30,7 @@ struct BoneAnimation {
 
 struct Skeleton {
     /// Iput for writing to bones.
-    ARRAY_HANDLE(BoneAnimation) bone_anims;
+    ARRAY_HANDLE(Bone_Animation) bone_anims;
     
     /// Start values of bone transform components, in case a
     /// component doesn't animate for a given bone.

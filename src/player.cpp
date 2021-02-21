@@ -1,6 +1,6 @@
 #include "player.h"
 
-void IncrementRotation(glm::vec3* direction, glm::vec3* rotation, RotationIncrementers rot, float deltaTime)
+void IncrementRotation(glm::vec3* direction, glm::vec3* rotation, Rotation_Incrementers rot, float deltaTime)
 {
     rotation->z += (rot.increment_left + rot.increment_right) * deltaTime;
     direction->x = cosf(rotation->z);
@@ -14,7 +14,7 @@ void SetCameraPos(glm::vec3* cameraPos, glm::vec3 otherPos)
     // Not the z-position since we don't want the camera to depend on the player along that axis
 }
 
-void Animate(float deltaTime, float* animTimer, AnimationStateKeyFrames animStates, StretchBooleans* stretch, GlideVariables* glide)
+void Animate(float deltaTime, float* animTimer, Animation_State_Key_Frames animStates, Stretch_Booleans* stretch, Glide_Variables* glide)
 {
     *animTimer += deltaTime;
 
@@ -44,7 +44,7 @@ void Animate(float deltaTime, float* animTimer, AnimationStateKeyFrames animStat
     }
 }
 
-void Glide(float deltaTime, GlideVariables* glide, glm::vec3 direction, glm::vec3* pos)
+void Glide(float deltaTime, Glide_Variables* glide, glm::vec3 direction, glm::vec3* pos)
 {
     glide->glide_timer += deltaTime;
 
@@ -68,7 +68,7 @@ void Glide(float deltaTime, GlideVariables* glide, glm::vec3 direction, glm::vec
 }
 
 // The calling layer above this function has to check whether mouse wheel input has been received or not to determine if this method should be called or not
-void CameraSlide(MouseWheel* wheel, View* view, SlideProperties* slideProperties, float deltaTime)
+void CameraSlide(Mouse_Wheel* wheel, View* view, Slide_Properties* slideProperties, float deltaTime)
 {
     if (!slideProperties->slide)
     {

@@ -12,7 +12,7 @@ ul_double GetFraction(ul_double numerator, ul_double denominator) {
     return numerator / denominator;
 }
 
-void ComputeTangentSpace(NormalMapVertex* v0, NormalMapVertex* v1, NormalMapVertex* v2)
+void ComputeTangentSpace(Normal_Map_Vertex* v0, Normal_Map_Vertex* v1, Normal_Map_Vertex* v2)
 {
     // Lengyels method
     glm::vec3 tangent, binormal, D, E;
@@ -48,7 +48,7 @@ bool CircleCollision(glm::vec3 pos1, glm::vec3 pos2, float radius1, float radius
     return VecDistance(pos1, pos2) < radius1 + radius2;
 }
 
-void ComputeNormalsPolygon(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* v2)
+void ComputeNormalsPolygon(Default_Vertex* v0, Default_Vertex* v1, Default_Vertex* v2)
 {
     glm::vec3 vertex1 = v1->position - v0->position;
     glm::vec3 vertex2 = v2->position - v0->position;
@@ -61,7 +61,7 @@ void ComputeNormalsPolygon(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* 
 }
 
 // For flat quads only
-void ComputeNormalsQuad(DefaultVertex* v0, DefaultVertex* v1, DefaultVertex* v2, DefaultVertex* v3)
+void ComputeNormalsQuad(Default_Vertex* v0, Default_Vertex* v1, Default_Vertex* v2, Default_Vertex* v3)
 {
     glm::vec3 vertex1 = v1->position - v0->position;
     glm::vec3 vertex2 = v2->position - v0->position;

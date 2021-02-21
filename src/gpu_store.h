@@ -20,7 +20,7 @@
 #define BONE_ID_LOCATION_NMS 5
 #define BONE_WEIGHT_LOCATION_NMS 6
 
-struct PhongMaterial
+struct Phong_Material
 {
     float ka[3];
     float kd[3];
@@ -45,14 +45,14 @@ struct Textures
     std::vector<aiString> path;
 };
 
-struct DefaultVertex
+struct Default_Vertex
 {
     glm::vec3 position;
     glm::vec3 normal;
     glm::vec2 tex_coords;
 };
 
-struct NormalMapVertex
+struct Normal_Map_Vertex
 {
     glm::vec3 position;
     glm::vec3 normal;
@@ -62,7 +62,7 @@ struct NormalMapVertex
 };
 
 #define NUM_BONES_PER_VERTEX 4
-struct SkeletalVertex
+struct Skeletal_Vertex
 {
     glm::vec3 position;
     glm::vec3 normal;
@@ -72,6 +72,6 @@ struct SkeletalVertex
     float weights[NUM_BONES_PER_VERTEX];
 };
 
-void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<DefaultVertex> vertices, std::vector<uint32_t> indices);
-void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ARRAY_HANDLE(SkeletalVertex) vertices, std::vector<uint32_t> indices);
+void SetupDefaultVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, std::vector<Default_Vertex> vertices, std::vector<uint32_t> indices);
+void SetupSkeletalVAO(uint32_t* VAO, uint32_t* VBO, uint32_t* EBO, ARRAY_HANDLE(Skeletal_Vertex) vertices, std::vector<uint32_t> indices);
 void DestroyVAO(uint32_t* VAO);

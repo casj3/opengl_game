@@ -6,51 +6,51 @@
 #include "camera.h"
 #include "transform.h"
 
-struct RotationIncrementers
+struct Rotation_Incrementers
 {
-	float increment_left = 0;
-	float increment_right = 0;
+    float increment_left = 0;
+    float increment_right = 0;
 };
 
-struct AnimationStateKeyFrames
+struct Animation_State_Key_Frames
 {
-	float state_1;
-	float state_2;
+    float state_1;
+    float state_2;
 };
 
-struct GlideVariables
+struct Glide_Variables
 {
-	bool glide_ahead;
-	bool glide_again;
+    bool glide_ahead;
+    bool glide_again;
 
-	float glide_timer;
+    float glide_timer;
 };
 
-struct StretchBooleans
+struct Stretch_Booleans
 {
-	bool stretch_out;
-	bool pull_in;
+    bool stretch_out;
+    bool pull_in;
 };
 
-struct UserSuper
+struct User_Super
 {
-	StretchBooleans stretch_booleans;
-	GlideVariables glide_variables;
-	AnimationStateKeyFrames animation_keys;
-	RotationIncrementers rotation_incrementers;
-	SlideProperties slide_props;
-	Transform user_transform;
-	glm::vec3 direction;
-	float animation_timer;
+    Stretch_Booleans stretch_booleans;
+    Glide_Variables glide_variables;
+    Animation_State_Key_Frames animation_keys;
+    Rotation_Incrementers rotation_incrementers;
+    Slide_Properties slide_props;
+    Transform user_transform;
+    glm::vec3 direction;
+    float animation_timer;
 };
 
-void IncrementRotation(glm::vec3* direction, glm::vec3* rotation, RotationIncrementers rot, float deltaTime);
+void IncrementRotation(glm::vec3* direction, glm::vec3* rotation, Rotation_Incrementers rot, float deltaTime);
 
 void SetCameraPos(glm::vec3* cameraPos, glm::vec3 otherPos);
 
-void Animate(float deltaTime, float* animTimer, AnimationStateKeyFrames animStates, StretchBooleans* stretch, GlideVariables* glide);
+void Animate(float deltaTime, float* animTimer, Animation_State_Key_Frames animStates, Stretch_Booleans* stretch, Glide_Variables* glide);
 
-void Glide(float deltaTime, GlideVariables* glide, glm::vec3 direction, glm::vec3* pos);
+void Glide(float deltaTime, Glide_Variables* glide, glm::vec3 direction, glm::vec3* pos);
 
 // The calling layer above this function has to check whether mouse wheel input has been received or not to determine if this method should be called or not
-void CameraSlide(MouseWheel* wheel, View* view, SlideProperties* slideProperties, float deltaTime);
+void CameraSlide(Mouse_Wheel* wheel, View* view, Slide_Properties* slideProperties, float deltaTime);

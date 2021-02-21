@@ -8,14 +8,14 @@
 #include "load.h"
 #include "animate.h"
 
-void InitializeScene1(ProgramSuper* program, struct Skeletons* skeletons, UserSuper* user);
+void InitializeScene1(Program_Super* program, struct Skeletons* skeletons, User_Super* user);
 
-void UpdateUser(UserSuper* user, View* view, float deltaTime);
+void UpdateUser(User_Super* user, View* view, float deltaTime);
 
-void SetPlayerInputVariables(StretchBooleans* stretch, RotationIncrementers* rotInc);
+void SetPlayerInputVariables(Stretch_Booleans* stretch, Rotation_Incrementers* rotInc);
 
-void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform userTransform, Skeleton bones);
+void SetUserGraphicsData(Program_Super graphicsData, Camera camera, Transform userTransform, Skeleton bones);
 
-void SetUserGraphicsDataOrtho(ProgramSuper graphicsData, OrthoCamera camera, Transform userTransform, Skeleton bones);
+void SetUserGraphicsDataOrtho(Program_Super graphicsData, Ortho_Camera camera, Transform userTransform, Skeleton bones);
 
-void SubInitializeUser(UserSuper* user);
+void SubInitializeUser(User_Super* user);

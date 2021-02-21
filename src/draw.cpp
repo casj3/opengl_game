@@ -11,9 +11,9 @@ void DrawTexturedVAO(uint32_t program, uint32_t VAO, Textures textures, uint32_t
     // 2019-07-27:
     // This needs to be revised, maybe simplified. I don't know what's going on with
     // all sstream crap here.
-    uint32_t diffuseNr = 1;
-    uint32_t specularNr = 1;
-    uint32_t normalNr = 1;
+    uint32_t diffuse_nr = 1;
+    uint32_t specular_nr = 1;
+    uint32_t normal_nr = 1;
 
     for (uint32_t i = 0; i < textures.id.size(); i++)
     {
@@ -24,19 +24,19 @@ void DrawTexturedVAO(uint32_t program, uint32_t VAO, Textures textures, uint32_t
 
         if (name == "diffuseSamp")
         {
-            ss << diffuseNr++; // Transfer uint32_t to stream
+            ss << diffuse_nr++; // Transfer uint32_t to stream
 
             number = ss.str();
         }
         else if (name == "specularSamp")
         {
-            ss << specularNr++; // Transfer uint32_t to stream
+            ss << specular_nr++; // Transfer uint32_t to stream
 
             number = ss.str();
         }
         else if (name == "normalSamp")
         {
-            ss << normalNr++; // Transfer uint32_t to stream
+            ss << normal_nr++; // Transfer uint32_t to stream
 
             number = ss.str();
         }
@@ -64,12 +64,12 @@ void DrawTexturedVAO(uint32_t program, uint32_t VAO, Textures textures, uint32_t
     }
 }
 
-void DrawTexturedPhongVAO(uint32_t program, uint32_t VAO, Textures textures, uint32_t indicesSize, PhongMaterial material)
+void DrawTexturedPhongVAO(uint32_t program, uint32_t VAO, Textures textures, uint32_t indicesSize, Phong_Material material)
 {
     // Bind appropriate textures
-    uint32_t diffuseNr = 1;
-    uint32_t specularNr = 1;
-    uint32_t normalNr = 1;
+    uint32_t diffuse_nr = 1;
+    uint32_t specular_nr = 1;
+    uint32_t normal_nr = 1;
 
     for (uint32_t i = 0; i < textures.id.size(); i++)
     {
@@ -80,19 +80,19 @@ void DrawTexturedPhongVAO(uint32_t program, uint32_t VAO, Textures textures, uin
 
         if (name == "diffuseSamp")
         {
-            ss << diffuseNr++; // Transfer uint32_t to stream
+            ss << diffuse_nr++; // Transfer uint32_t to stream
 
             number = ss.str();
         }
         else if (name == "specularSamp")
         {
-            ss << specularNr++; // Transfer uint32_t to stream
+            ss << specular_nr++; // Transfer uint32_t to stream
 
             number = ss.str();
         }
         else if (name == "normalSamp")
         {
-            ss << normalNr++; // Transfer uint32_t to stream
+            ss << normal_nr++; // Transfer uint32_t to stream
 
             number = ss.str();
         }
@@ -127,7 +127,7 @@ void DrawTexturedPhongVAO(uint32_t program, uint32_t VAO, Textures textures, uin
     }
 }
 
-void DrawPhongVAO(uint32_t program, uint32_t VAO, uint32_t indicesSize, PhongMaterial material)
+void DrawPhongVAO(uint32_t program, uint32_t VAO, uint32_t indicesSize, Phong_Material material)
 {
     // Also set each mesh's shininess property to a default value (if you want you could extend this to another mesh property and possibly change this value)
     glUniform1f(glGetUniformLocation(program, "material.shininess"), material.shininess);

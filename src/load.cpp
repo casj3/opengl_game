@@ -14,47 +14,47 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-constexpr uint32_t kFirstKeyFrame = 0;
+#define FIRST_KEY_FRAME  0
 
-struct AiBoneResources {
+struct Ai_Bone_Res {
     aiMesh* mesh;
     aiAnimation* animation;
 };
 
-/// Holds the global values for a node given by its ID, for all key-frames.
-struct NodeKeyFrameValues {
+/// Holds the global transform values for a node given by its ID, for all key-frames.
+struct Node_Anim_Data {
     const char* node_id;
     T_Append_Array<Pair_uint_vec3> positions;
     T_Append_Array<Pair_uint_vec3> rotations; // euler angles
     T_Append_Array<Pair_uint_vec3> scalings;
 };
 
-struct NodeMarkers {
+struct Node_Markers {
     ARRAY_HANDLE(Pair_uint_uint) anim;
     ARRAY_HANDLE(Pair_uint_uint) bone;
 };
 
-void AddAnimationKeys(BoneAnimKeys* outAnimKeys,
+void AddAnimationKeys(Bone_Anim_Keys* outAnimKeys,
                       T_Append_Array<Pair_uint_vec3> animComponent,
                       float keyFrameTime) {
-    BoneAnimKeys animKeys = {
+    Bone_Anim_Keys anim_keys = {
         GET_ARRAY_HANDLE(glm::vec3, animComponent.counter),
         GET_ARRAY_HANDLE(float, animComponent.counter),
     };
 
     for (uint32_t i = 0; i < animComponent.counter; i++) {
-        (*animKeys.key_frames)[i] = (*animComponent.handle)[i].key * keyFrameTime;
-        (*animKeys.values)[i] = (*animComponent.handle)[i].value;
+        (*anim_keys.key_frames)[i] = (*animComponent.handle)[i].key * keyFrameTime;
+        (*anim_keys.values)[i] = (*animComponent.handle)[i].value;
     }
 
-    *outAnimKeys = animKeys;
+    *outAnimKeys = anim_keys;
 }
 
 // Helper functions internal to the file
-void RemoveNodeKeyFrameValues(ARRAY_HANDLE(NodeKeyFrameValues) nodes) {
-    size_t arraySize = GET_ARRAY_SIZE(nodes);
-    for(size_t i = 0; i < arraySize; i++) {
-        NodeKeyFrameValues node = (*nodes)[i];
+void RemoveNodeAnimData(ARRAY_HANDLE(Node_Anim_Data) nodes) {
+    size_t array_size = GET_ARRAY_SIZE(nodes);
+    for(size_t i = 0; i < array_size; i++) {
+        Node_Anim_Data node = (*nodes)[i];
         RETURN_ARRAY(node.positions.handle);
         RETURN_ARRAY(node.rotations.handle);
         RETURN_ARRAY(node.scalings.handle);
@@ -62,7 +62,7 @@ void RemoveNodeKeyFrameValues(ARRAY_HANDLE(NodeKeyFrameValues) nodes) {
     RETURN_ARRAY(nodes);
 }
 
-void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, Transform* transform, BoneAnimation* boneAnimation, float keyFrameTime);
+void GetBoneAnimation(Node_Anim_Data node, glm::mat4* bone, Transform* transform, Bone_Animation* boneAnimation, float keyFrameTime);
 
 /// Traverses skeleton and calculates the global positions of the bones per key frame.
 ///
@@ -72,16 +72,16 @@ void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, Transform* trans
 /// @param boneRes       Mesh and animation resources for the skeleton.
 ///
 /// @return the node key frame values sorted in the correct order with regards to the aiMesh bone array.
-ARRAY_HANDLE(NodeKeyFrameValues) ImportGlobalBonesThroughTime(ARRAY_HANDLE(NodeKeyFrameValues) boneNodes,
-                                                             uint32_t numKeyFrames,
-                                                             aiNode* meshRoot,
-                                                             AiBoneResources boneRes);
+ARRAY_HANDLE(Node_Anim_Data) ImportGlobalBonesThroughTime(ARRAY_HANDLE(Node_Anim_Data) boneNodes,
+                                                          uint32_t numKeyFrames,
+                                                          aiNode* meshRoot,
+                                                          Ai_Bone_Res boneRes);
 
 void AddGlobalBonesForKeyFrame(aiNode* root,
                                aiMatrix4x4 parent,
-                               AiBoneResources boneRes,
-                               ARRAY_HANDLE(NodeKeyFrameValues) nodes,
-                               NodeMarkers nodeMarkers,
+                               Ai_Bone_Res boneRes,
+                               ARRAY_HANDLE(Node_Anim_Data) nodes,
+                               Node_Markers nodeMarkers,
                                uint32_t keyFrame,
                                uint32_t* animNodeCounter,
                                uint32_t* boneNodeCounter,
@@ -89,8 +89,8 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
 
 void AddGlobalBonesForFirstKeyFrame(aiNode* root,
                                     aiMatrix4x4 parent,
-                                    AiBoneResources boneRes,
-                                    ARRAY_HANDLE(NodeKeyFrameValues) nodes,
+                                    Ai_Bone_Res boneRes,
+                                    ARRAY_HANDLE(Node_Anim_Data) nodes,
                                     T_Append_Array<Pair_uint_uint>* animNodeMarkers,
                                     T_Append_Array<Pair_uint_uint>* boneNodeMarkers,
                                     uint32_t numKeyFrames,
@@ -120,15 +120,15 @@ const aiScene* ImportScene(Assimp::Importer* importer, std::string path)
     return scene;
 }
 
-std::vector<DefaultVertex> LoadVertices(aiMesh* mesh)
+std::vector<Default_Vertex> LoadVertices(aiMesh* mesh)
 {
-    std::vector<DefaultVertex> vertices;
+    std::vector<Default_Vertex> vertices;
     vertices.resize(mesh->mNumVertices);
 
     // Walk through each of the mesh's vertices
     for (uint32_t i = 0; i < mesh->mNumVertices; i++)
     {
-        DefaultVertex vertex;
+        Default_Vertex vertex;
         glm::vec3 vector;
 
         // Positions
@@ -190,20 +190,20 @@ Textures LoadTextures(aiMesh* mesh, const aiScene* scene, std::string path, Text
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-        Textures diffuseMaps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "diffuseSamp", directory, texturesLoaded);
-        textures.id.insert(textures.id.end(), diffuseMaps.id.begin(), diffuseMaps.id.end());
-        textures.path.insert(textures.path.end(), diffuseMaps.path.begin(), diffuseMaps.path.end());
-        textures.types.insert(textures.types.end(), diffuseMaps.types.begin(), diffuseMaps.types.end());
+        Textures diffuse_maps = LoadMaterialTextures(material, aiTextureType_DIFFUSE, "diffuseSamp", directory, texturesLoaded);
+        textures.id.insert(textures.id.end(), diffuse_maps.id.begin(), diffuse_maps.id.end());
+        textures.path.insert(textures.path.end(), diffuse_maps.path.begin(), diffuse_maps.path.end());
+        textures.types.insert(textures.types.end(), diffuse_maps.types.begin(), diffuse_maps.types.end());
 
-        Textures specularMaps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "specularSamp", directory, texturesLoaded);
-        textures.id.insert(textures.id.end(), specularMaps.id.begin(), specularMaps.id.end());
-        textures.path.insert(textures.path.end(), specularMaps.path.begin(), specularMaps.path.end());
-        textures.types.insert(textures.types.end(), specularMaps.types.begin(), specularMaps.types.end());
+        Textures spec_maps = LoadMaterialTextures(material, aiTextureType_SPECULAR, "specularSamp", directory, texturesLoaded);
+        textures.id.insert(textures.id.end(), spec_maps.id.begin(), spec_maps.id.end());
+        textures.path.insert(textures.path.end(), spec_maps.path.begin(), spec_maps.path.end());
+        textures.types.insert(textures.types.end(), spec_maps.types.begin(), spec_maps.types.end());
 
-        Textures normalMaps = LoadMaterialTextures(material, aiTextureType_NORMALS, "normalSamp", directory, texturesLoaded);
-        textures.id.insert(textures.id.end(), normalMaps.id.begin(), normalMaps.id.end());
-        textures.path.insert(normalMaps.path.end(), normalMaps.path.begin(), normalMaps.path.end());
-        textures.types.insert(normalMaps.types.end(), normalMaps.types.begin(), normalMaps.types.end());
+        Textures normal_maps = LoadMaterialTextures(material, aiTextureType_NORMALS, "normalSamp", directory, texturesLoaded);
+        textures.id.insert(textures.id.end(), normal_maps.id.begin(), normal_maps.id.end());
+        textures.path.insert(normal_maps.path.end(), normal_maps.path.begin(), normal_maps.path.end());
+        textures.types.insert(normal_maps.types.end(), normal_maps.types.begin(), normal_maps.types.end());
     }
 
     return textures;
@@ -253,9 +253,9 @@ Textures LoadMaterialTextures(aiMaterial *mat, aiTextureType type, std::string t
 
 uint32_t TextureFromFile(std::string fileName, std::string directory)
 {
-    int width, height, numComponents;
+    int width, height, num_components;
 
-    unsigned char* imageData = stbi_load(fileName.c_str(), &width, &height, &numComponents, 4);
+    unsigned char* imageData = stbi_load(fileName.c_str(), &width, &height, &num_components, 4);
 
     uint32_t textureID;
     glGenTextures(1, &textureID);
@@ -286,13 +286,13 @@ void DestroyTextures(Textures textures)
 }
 
 // TODO: Add documentation for clarifying that this function depends on scene to mesh correspondence.
-Skeleton LoadSkeleton(const aiScene* scene, ARRAY_HANDLE(SkeletalVertex)* outVertices) {
+Skeleton LoadSkeleton(const aiScene* scene, ARRAY_HANDLE(Skeletal_Vertex)* outVertices) {
     aiMesh* mesh = scene->mMeshes[0];
-    ARRAY_HANDLE(SkeletalVertex) verticesHandle = GET_ARRAY_HANDLE(SkeletalVertex, mesh->mNumVertices);
+    ARRAY_HANDLE(Skeletal_Vertex) vertices_handle = GET_ARRAY_HANDLE(Skeletal_Vertex, mesh->mNumVertices);
     
-    assert(mesh->mNumVertices == GET_ARRAY_SIZE(verticesHandle));
+    assert(mesh->mNumVertices == GET_ARRAY_SIZE(vertices_handle));
 
-    SkeletalVertex* vertices = *verticesHandle;
+    Skeletal_Vertex* vertices = *vertices_handle;
 
     for (uint32_t i = 0; i < mesh->mNumVertices; i++) {
         // Positions
@@ -321,77 +321,77 @@ Skeleton LoadSkeleton(const aiScene* scene, ARRAY_HANDLE(SkeletalVertex)* outVer
     }
 
     // The largest amount of a transform component's keys set the roof for the total amount of key-frames for the animation
-    uint32_t numPositionKeys = scene->mAnimations[0]->mChannels[0]->mNumPositionKeys;
-    uint32_t numRotationKeys = scene->mAnimations[0]->mChannels[0]->mNumRotationKeys;
-    uint32_t numScaleKeys = scene->mAnimations[0]->mChannels[0]->mNumScalingKeys;
-    bool mostPositionKeys = numPositionKeys > numRotationKeys && numPositionKeys > numScaleKeys;
-    bool mostRotationKeys = numRotationKeys > numPositionKeys && numRotationKeys > numScaleKeys;
-    bool mostScaleKeys = numScaleKeys > numPositionKeys && numScaleKeys > numRotationKeys;
-    uint32_t numKeyFrames = (numPositionKeys * mostPositionKeys +
-                             numRotationKeys * mostRotationKeys +
-                             mostScaleKeys * numScaleKeys) +
-                             numPositionKeys * (!mostScaleKeys && !mostRotationKeys && !mostPositionKeys);
+    uint32_t num_pos_keys = scene->mAnimations[0]->mChannels[0]->mNumPositionKeys;
+    uint32_t num_rot_keys = scene->mAnimations[0]->mChannels[0]->mNumRotationKeys;
+    uint32_t num_scale_keys = scene->mAnimations[0]->mChannels[0]->mNumScalingKeys;
+    bool mostPositionKeys = num_pos_keys > num_rot_keys && num_pos_keys > num_scale_keys;
+    bool most_rot_keys = num_rot_keys > num_pos_keys && num_rot_keys > num_scale_keys;
+    bool most_scale_keys = num_scale_keys > num_pos_keys && num_scale_keys > num_rot_keys;
+    uint32_t num_key_frames = (num_pos_keys * mostPositionKeys +
+                             num_rot_keys * most_rot_keys +
+                             most_scale_keys * num_scale_keys) +
+        num_pos_keys * (!most_scale_keys && !most_rot_keys && !mostPositionKeys);
 
     // TODO: Support multiple animations per mesh. We should wait with this until we know what kinds of animations we have per type of mesh.
     // Doing one animation per mesh to begin with.
-    NodeKeyFrameValues** nodes = GET_ARRAY_HANDLE(NodeKeyFrameValues, mesh->mNumBones);
-    float animationSeconds = (float) (scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
-    float secondsPerKeyFrame = animationSeconds / (numKeyFrames - 1);
+    Node_Anim_Data** nodes = GET_ARRAY_HANDLE(Node_Anim_Data, mesh->mNumBones);
+    float anim_sec = (float) (scene->mAnimations[0]->mDuration / scene->mAnimations[0]->mTicksPerSecond);
+    float sec_per_frame = anim_sec / (num_key_frames - 1);
 
-    Print("Number of key frames %u\n", numKeyFrames);
-    Print("Seconds per key frame %.6f\n", secondsPerKeyFrame);
-    Print("Animation second duration %.6f\n", animationSeconds);
+    Print("Number of key frames %u\n", num_key_frames);
+    Print("Seconds per key frame %.6f\n", sec_per_frame);
+    Print("Animation second duration %.6f\n", anim_sec);
 
-    nodes = ImportGlobalBonesThroughTime(nodes, numKeyFrames, scene->mRootNode, { mesh, scene->mAnimations[0] });
+    nodes = ImportGlobalBonesThroughTime(nodes, num_key_frames, scene->mRootNode, { mesh, scene->mAnimations[0] });
 
-    BoneAnimation** boneAnims = GET_ARRAY_HANDLE(BoneAnimation, mesh->mNumBones);
-    Transform** boneTransforms = GET_ARRAY_HANDLE(Transform, mesh->mNumBones);
-    glm::mat4** bones = GET_ARRAY_HANDLE(glm::mat4, mesh->mNumBones);
+    ARRAY_HANDLE(Bone_Animation) bone_anims = GET_ARRAY_HANDLE(Bone_Animation, mesh->mNumBones);
+    ARRAY_HANDLE(Transform) bone_transforms = GET_ARRAY_HANDLE(Transform, mesh->mNumBones);
+    ARRAY_HANDLE(glm::mat4) bones = GET_ARRAY_HANDLE(glm::mat4, mesh->mNumBones);
 
     for (uint32_t i = 0; i < mesh->mNumBones; i++) {
-        GetBoneAnimation((*nodes)[i], (*bones) + i, (*boneTransforms) + i, (*boneAnims) + i, secondsPerKeyFrame);
+        GetBoneAnimation((*nodes)[i], (*bones) + i, (*bone_transforms) + i, (*bone_anims) + i, sec_per_frame);
         for (uint32_t j = 0; j < mesh->mBones[i]->mNumWeights; j++) {
-            uint32_t vertexId = mesh->mBones[i]->mWeights[j].mVertexId;
+            uint32_t vertex_id = mesh->mBones[i]->mWeights[j].mVertexId;
             float weight = mesh->mBones[i]->mWeights[j].mWeight;
 
             // This loops looks for a free slot to fill in the weight array of the concerned vertex
-            for (uint32_t k = 0; k < sizeof(vertices[vertexId].IDs) / sizeof(vertices[vertexId].IDs[0]); k++) {
+            for (uint32_t k = 0; k < sizeof(vertices[vertex_id].IDs) / sizeof(vertices[vertex_id].IDs[0]); k++) {
                 // 0.0 implies a free slot
-                if (vertices[vertexId].weights[k] == 0.0)
+                if (vertices[vertex_id].weights[k] == 0.0)
                 {
-                    vertices[vertexId].IDs[k] = i;
-                    vertices[vertexId].weights[k] = weight;
+                    vertices[vertex_id].IDs[k] = i;
+                    vertices[vertex_id].weights[k] = weight;
                     break;
                 }
             }
         }
     }
     // Remove what will not be needed outside of the function scope.
-    RemoveNodeKeyFrameValues(nodes);
+    RemoveNodeAnimData(nodes);
 
-    *outVertices = verticesHandle;
-    Skeleton skeleton = { boneAnims,
-                          boneTransforms,
+    *outVertices = vertices_handle;
+    Skeleton skeleton = { bone_anims,
+                          bone_transforms,
                           bones,
-                          animationSeconds };
+                          anim_sec };
 
     return skeleton;
 }
 
-void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, Transform* transform, BoneAnimation* boneAnimation, float keyFrameTime) {
-    bool animatePos = node.positions.counter > 1;
-    bool animateRot = node.rotations.counter > 1;
-    bool animateScale = node.scalings.counter > 1;
+void GetBoneAnimation(Node_Anim_Data node, glm::mat4* bone, Transform* transform, Bone_Animation* boneAnimation, float keyFrameTime) {
+    bool animate_pos = node.positions.counter > 1;
+    bool animate_rot = node.rotations.counter > 1;
+    bool animate_scale = node.scalings.counter > 1;
 
-    boneAnimation->animation_flags = GetAnimationFlags(animatePos, animateRot, animateScale);
+    boneAnimation->animation_flags = GetAnimationFlags(animate_pos, animate_rot, animate_scale);
 
-    if (animatePos) {
+    if (animate_pos) {
         AddAnimationKeys(&boneAnimation->bone_position_keys, node.positions, keyFrameTime);
     }
-    if (animateRot) {
+    if (animate_rot) {
         AddAnimationKeys(&boneAnimation->bone_rotation_keys, node.rotations, keyFrameTime);
     }
-    if (animateScale) {
+    if (animate_scale) {
         AddAnimationKeys(&boneAnimation->bone_scale_keys, node.scalings, keyFrameTime);
     }
 
@@ -403,35 +403,35 @@ void GetBoneAnimation(NodeKeyFrameValues node, glm::mat4* bone, Transform* trans
     *bone = TransformMatrix(*transform);
 }
 
-ARRAY_HANDLE(NodeKeyFrameValues) ImportGlobalBonesThroughTime(ARRAY_HANDLE(NodeKeyFrameValues) boneNodes,
-                                                              uint32_t numKeyFrames,
-                                                              aiNode* meshRoot,
-                                                              AiBoneResources boneRes) {
+ARRAY_HANDLE(Node_Anim_Data) ImportGlobalBonesThroughTime(ARRAY_HANDLE(Node_Anim_Data) boneNodes,
+                                                          uint32_t numKeyFrames,
+                                                          aiNode* meshRoot,
+                                                          Ai_Bone_Res boneRes) {
     // Keep track of the order of animation and skeletal nodes to avoid searching for them more than one time.
-    NodeMarkers nodeMarkers;
-    nodeMarkers.anim = GET_ARRAY_HANDLE(Pair_uint_uint, boneRes.animation->mNumChannels);
-    nodeMarkers.bone = GET_ARRAY_HANDLE(Pair_uint_uint, boneRes.mesh->mNumBones);
+    Node_Markers node_markers;
+    node_markers.anim = GET_ARRAY_HANDLE(Pair_uint_uint, boneRes.animation->mNumChannels);
+    node_markers.bone = GET_ARRAY_HANDLE(Pair_uint_uint, boneRes.mesh->mNumBones);
 
-    aiMatrix4x4 identityMatrix = aiMatrix4x4();
-    uint32_t nodeCounter = 0;
-    T_Append_Array<Pair_uint_uint> appAnimMarkers  = { nodeMarkers.anim, 0 };
-    T_Append_Array<Pair_uint_uint> appBoneMarkers = { nodeMarkers.bone, 0 };
+    aiMatrix4x4 identity_mat = aiMatrix4x4();
+    uint32_t node_counter = 0;
+    T_Append_Array<Pair_uint_uint> app_anim_markers  = { node_markers.anim, 0 };
+    T_Append_Array<Pair_uint_uint> app_bone_markers = { node_markers.bone, 0 };
     // Record values for succeeding traversals of the node tree.
-    AddGlobalBonesForFirstKeyFrame(meshRoot, identityMatrix, boneRes, boneNodes,
-                                   &appAnimMarkers, &appBoneMarkers, numKeyFrames, &nodeCounter);
+    AddGlobalBonesForFirstKeyFrame(meshRoot, identity_mat, boneRes, boneNodes,
+                                   &app_anim_markers, &app_bone_markers, numKeyFrames, &node_counter);
 
-    uint32_t animNodeCounter;
-    uint32_t boneNodeCounter;
-    for(uint32_t i = kFirstKeyFrame + 1; i < numKeyFrames; i++) {
-        nodeCounter = 0;
-        animNodeCounter = 0;
-        boneNodeCounter = 0;
-        AddGlobalBonesForKeyFrame(meshRoot, identityMatrix, boneRes, boneNodes, nodeMarkers,
-                                  i, &animNodeCounter, &boneNodeCounter, &nodeCounter);
+    uint32_t anim_node_counter;
+    uint32_t bone_node_counter;
+    for(uint32_t i = FIRST_KEY_FRAME + 1; i < numKeyFrames; i++) {
+        node_counter = 0;
+        anim_node_counter = 0;
+        bone_node_counter = 0;
+        AddGlobalBonesForKeyFrame(meshRoot, identity_mat, boneRes, boneNodes, node_markers,
+                                  i, &anim_node_counter, &bone_node_counter, &node_counter);
     }
 
-    RETURN_ARRAY(nodeMarkers.anim);
-    RETURN_ARRAY(nodeMarkers.bone);
+    RETURN_ARRAY(node_markers.anim);
+    RETURN_ARRAY(node_markers.bone);
 
     return boneNodes;
 }
@@ -439,25 +439,25 @@ ARRAY_HANDLE(NodeKeyFrameValues) ImportGlobalBonesThroughTime(ARRAY_HANDLE(NodeK
 /// Sets the elements identified by keyFrame if it is not the first one, i.e. 0.
 void AddGlobalBonesForKeyFrame(aiNode* root,
                                aiMatrix4x4 parent,
-                               AiBoneResources boneRes,
-                               ARRAY_HANDLE(NodeKeyFrameValues) nodes,
-                               NodeMarkers nodeMarkers,
+                               Ai_Bone_Res boneRes,
+                               ARRAY_HANDLE(Node_Anim_Data) nodes,
+                               Node_Markers nodeMarkers,
                                uint32_t keyFrame,
                                uint32_t* animNodeCounter,
                                uint32_t* boneNodeCounter,
                                uint32_t* nodeCounter) {
     // If all bones have been retrieved, return.
-    size_t numBones = GET_ARRAY_SIZE(nodeMarkers.bone);
-    if (*boneNodeCounter >= numBones) {
+    size_t num_bones = GET_ARRAY_SIZE(nodeMarkers.bone);
+    if (*boneNodeCounter >= num_bones) {
         return;
     }
 
     // If the animation node counter hasn't been surpassed by
-    size_t numAnimNodes = GET_ARRAY_SIZE(nodeMarkers.anim);
-    if (numAnimNodes > *animNodeCounter && *nodeCounter == (*nodeMarkers.anim)[*animNodeCounter].key) {
-        uint32_t animNodeId = (*nodeMarkers.anim)[*animNodeCounter].value;
-        aiNodeAnim* nodeAnim = boneRes.animation->mChannels[animNodeId];
-        UpdateParentMatrix(&parent, nodeAnim, keyFrame);
+    size_t num_anim_nodes = GET_ARRAY_SIZE(nodeMarkers.anim);
+    if (num_anim_nodes > *animNodeCounter && *nodeCounter == (*nodeMarkers.anim)[*animNodeCounter].key) {
+        uint32_t anim_node_id = (*nodeMarkers.anim)[*animNodeCounter].value;
+        aiNodeAnim* node_anim = boneRes.animation->mChannels[anim_node_id];
+        UpdateParentMatrix(&parent, node_anim, keyFrame);
 
         // Increment counter to compare with the next entry in the array for the next node.
         (*animNodeCounter)++;
@@ -465,47 +465,47 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
         parent *= root->mTransformation;
     }
 
-    Pair_uint_uint boneNodeMarker = (*nodeMarkers.bone)[*boneNodeCounter];
-    if (*nodeCounter == boneNodeMarker.key) {
-        NodeKeyFrameValues node = (*nodes)[boneNodeMarker.value];
+    Pair_uint_uint bone_node_mark = (*nodeMarkers.bone)[*boneNodeCounter];
+    if (*nodeCounter == bone_node_mark.key) {
+        Node_Anim_Data node = (*nodes)[bone_node_mark.value];
 
-        size_t prevPosId = TGetBack<>(node.positions);
-        size_t prevRotId = TGetBack<>(node.rotations);
-        size_t prevScaleId = TGetBack<>(node.scalings);
+        size_t prev_pos_id = TGetBack<>(node.positions);
+        size_t prev_rot_id = TGetBack<>(node.rotations);
+        size_t prev_scale_id = TGetBack<>(node.scalings);
 
-        Pair_uint_vec3 prevPos = (*node.positions.handle)[prevPosId];
-        Pair_uint_vec3 prevRot = (*node.rotations.handle)[prevRotId];
-        Pair_uint_vec3 prevScale = (*node.scalings.handle)[prevScaleId];
+        Pair_uint_vec3 prev_pos = (*node.positions.handle)[prev_pos_id];
+        Pair_uint_vec3 prev_rot = (*node.rotations.handle)[prev_rot_id];
+        Pair_uint_vec3 prev_scale = (*node.scalings.handle)[prev_scale_id];
 
         // Multiply by the offset of the bone to get global space values.
-        aiMatrix4x4 globalParent = parent * boneRes.mesh->mBones[boneNodeMarker.value]->mOffsetMatrix;
+        aiMatrix4x4 globalParent = parent * boneRes.mesh->mBones[bone_node_mark.value]->mOffsetMatrix;
         Transform parentTransform = GetTransform(globalParent);
 
         // Only add the values if they have changed since the last key-frame.
-        if (prevPos.value != parentTransform.pos) {
+        if (prev_pos.value != parentTransform.pos) {
             // If there has been more than one key-frame in between the differing values, an extra key-frame
             // has to be added such that the interpolation occurs between the last key-frame differing from
             // the new one being added.
-            if (keyFrame - prevPos.key > 1) {
-                TAppendElement<>(&node.positions, { keyFrame - 1, prevPos.value });
+            if (keyFrame - prev_pos.key > 1) {
+                TAppendElement<>(&node.positions, { keyFrame - 1, prev_pos.value });
             }
             TAppendElement<>(&node.positions, { keyFrame, parentTransform.pos });
         }
-        if (prevRot.value != parentTransform.rot) {
-            if (keyFrame - prevRot.key > 1) {
-                TAppendElement<>(&node.rotations, { keyFrame - 1, prevRot.value });
+        if (prev_rot.value != parentTransform.rot) {
+            if (keyFrame - prev_rot.key > 1) {
+                TAppendElement<>(&node.rotations, { keyFrame - 1, prev_rot.value });
             }
             TAppendElement<>(&node.rotations, { keyFrame, parentTransform.rot });
         }
-        if (prevScale.value != parentTransform.scale) {
-            if (keyFrame - prevScale.key > 1) {
-                TAppendElement<>(&node.scalings, { keyFrame - 1, prevScale.value });
+        if (prev_scale.value != parentTransform.scale) {
+            if (keyFrame - prev_scale.key > 1) {
+                TAppendElement<>(&node.scalings, { keyFrame - 1, prev_scale.value });
             }
             TAppendElement<>(&node.scalings, { keyFrame, parentTransform.scale });
         }
 
         // We mustn't forget to write back to the real node instance, since we're dealing with copies.
-        (*nodes)[boneNodeMarker.value] = node;
+        (*nodes)[bone_node_mark.value] = node;
 
         // Increment counter to compare with the next entry in the array for the next node.
         (*boneNodeCounter)++;
@@ -529,42 +529,42 @@ void AddGlobalBonesForKeyFrame(aiNode* root,
 /// Sets the elements identified by the first keyFrame.
 void AddGlobalBonesForFirstKeyFrame(aiNode* root,
                                     aiMatrix4x4 parent,
-                                    AiBoneResources boneRes,
-                                    ARRAY_HANDLE(NodeKeyFrameValues) nodes,
+                                    Ai_Bone_Res boneRes,
+                                    ARRAY_HANDLE(Node_Anim_Data) nodes,
                                     T_Append_Array<Pair_uint_uint>* animNodeMarkers,
                                     T_Append_Array<Pair_uint_uint>* boneNodeMarkers,
                                     uint32_t numKeyFrames,
                                     uint32_t* nodeCounter) {
-    const char* nodeName = root->mName.data;
-    const aiNodeAnim* nodeAnim = FindNodeAnim(boneRes.animation, nodeName, animNodeMarkers, *nodeCounter);
+    const char* node_name = root->mName.data;
+    const aiNodeAnim* node_anim = FindNodeAnim(boneRes.animation, node_name, animNodeMarkers, *nodeCounter);
 
     // A future error may reside in that if the keys for each aspect of the transform are multiple and differ
-    if (nodeAnim) {
-        UpdateParentMatrix(&parent, nodeAnim, kFirstKeyFrame);
+    if (node_anim) {
+        UpdateParentMatrix(&parent, node_anim, FIRST_KEY_FRAME);
     } else {
         parent *= root->mTransformation;
     }
 
-    if (IsBone(boneRes.mesh, nodeName, boneNodeMarkers, *nodeCounter)) {
-        NodeKeyFrameValues node = {
-            nodeName,
+    if (IsBone(boneRes.mesh, node_name, boneNodeMarkers, *nodeCounter)) {
+        Node_Anim_Data node = {
+            node_name,
             TGetAppendArray<Pair_uint_vec3>(numKeyFrames),
             TGetAppendArray<Pair_uint_vec3>(numKeyFrames),
             TGetAppendArray<Pair_uint_vec3>(numKeyFrames),
         };
 
-        // The boneId is used to arrange the NodeKeyFrameValues in the same order as the assimp bone array, inherent to the aiMesh
-        uint32_t boneId = (*boneNodeMarkers->handle)[TGetBack<>(*boneNodeMarkers)].value;
+        // The boneId is used to arrange the Node_Anim_Data in the same order as the assimp bone array, inherent to the aiMesh
+        uint32_t bone_id = (*boneNodeMarkers->handle)[TGetBack<>(*boneNodeMarkers)].value;
 
         // Multiply by the offset of the bone to get global space values.
-        aiMatrix4x4 globalParent = parent * boneRes.mesh->mBones[boneId]->mOffsetMatrix;
-        Transform parentTransform = GetTransform(globalParent);
+        aiMatrix4x4 global_parent = parent * boneRes.mesh->mBones[bone_id]->mOffsetMatrix;
+        Transform parent_transform = GetTransform(global_parent);
 
-        TAppendElement<>(&node.positions, { kFirstKeyFrame, parentTransform.pos });
-        TAppendElement<>(&node.rotations, { kFirstKeyFrame, parentTransform.rot });
-        TAppendElement<>(&node.scalings, { kFirstKeyFrame, parentTransform.scale });
+        TAppendElement<>(&node.positions, { FIRST_KEY_FRAME, parent_transform.pos });
+        TAppendElement<>(&node.rotations, { FIRST_KEY_FRAME, parent_transform.rot });
+        TAppendElement<>(&node.scalings, { FIRST_KEY_FRAME, parent_transform.scale });
 
-        (*nodes)[boneId] = node;
+        (*nodes)[bone_id] = node;
     }
 
     for (uint32_t i = 0; i < root->mNumChildren; i++) {
@@ -581,37 +581,37 @@ void AddGlobalBonesForFirstKeyFrame(aiNode* root,
 }
 
 void UpdateParentMatrix(aiMatrix4x4* parent, const aiNodeAnim* nodeAnim, uint32_t keyFrame) {
-    bool useKeyFrame = nodeAnim->mNumScalingKeys != 1 && keyFrame < nodeAnim->mNumScalingKeys;
-    aiVector3D scaling = nodeAnim->mScalingKeys[useKeyFrame ? keyFrame : 0].mValue;
+    bool use_key_frame = nodeAnim->mNumScalingKeys != 1 && keyFrame < nodeAnim->mNumScalingKeys;
+    aiVector3D scaling = nodeAnim->mScalingKeys[use_key_frame ? keyFrame : 0].mValue;
 
-    useKeyFrame = nodeAnim->mNumRotationKeys != 1 && keyFrame < nodeAnim->mNumRotationKeys;
-    aiQuaternion rotationQ = nodeAnim->mRotationKeys[useKeyFrame ? keyFrame : 0].mValue;
+    use_key_frame = nodeAnim->mNumRotationKeys != 1 && keyFrame < nodeAnim->mNumRotationKeys;
+    aiQuaternion rotation_q = nodeAnim->mRotationKeys[use_key_frame ? keyFrame : 0].mValue;
 
-    useKeyFrame = nodeAnim->mNumPositionKeys != 1 && keyFrame < nodeAnim->mNumPositionKeys;
-    aiVector3D translation = nodeAnim->mPositionKeys[useKeyFrame ? keyFrame : 0].mValue;
+    use_key_frame = nodeAnim->mNumPositionKeys != 1 && keyFrame < nodeAnim->mNumPositionKeys;
+    aiVector3D translation = nodeAnim->mPositionKeys[use_key_frame ? keyFrame : 0].mValue;
 
     // Refresh parent for next node
-    *parent *= aiMatrix4x4(scaling, rotationQ, translation);
+    *parent *= aiMatrix4x4(scaling, rotation_q, translation);
 }
 
 Transform GetTransform(const aiMatrix4x4& matrix) {
     // Decompose to store the individual vectors since we don't want to store the global bones as matrices, since
     // that would take up unnecessary space in memory.
     aiVector3D scaling;
-    aiQuaternion rotationQ;
+    aiQuaternion rotation_q;
     aiVector3D translation;
-    matrix.Decompose(scaling, rotationQ, translation);
+    matrix.Decompose(scaling, rotation_q, translation);
 
     Transform transform;
     transform.scale.x = scaling.x;
     transform.scale.y = scaling.y;
     transform.scale.z = scaling.z;
 
-    glm::quat quat = glm::quat(rotationQ.w, rotationQ.x, rotationQ.y, rotationQ.z);
-    glm::vec3 eulerAngles = glm::eulerAngles(quat);
-    transform.rot.x = eulerAngles.x;
-    transform.rot.y = eulerAngles.y;
-    transform.rot.z = eulerAngles.z;
+    glm::quat quat = glm::quat(rotation_q.w, rotation_q.x, rotation_q.y, rotation_q.z);
+    glm::vec3 euler_angles = glm::eulerAngles(quat);
+    transform.rot.x = euler_angles.x;
+    transform.rot.y = euler_angles.y;
+    transform.rot.z = euler_angles.z;
 
     transform.pos.x = translation.x;
     transform.pos.y = translation.y;
@@ -626,9 +626,9 @@ const aiNodeAnim* FindNodeAnim(aiAnimation* animation,
                                uint32_t nodeCounter) {
     for (uint32_t i = 0; i < animation->mNumChannels; i++)
     {
-        aiNodeAnim* nodeAnim = animation->mChannels[i];
+        aiNodeAnim* node_anim = animation->mChannels[i];
 
-        if (strcmp(nodeAnim->mNodeName.data, nodeName) == 0)
+        if (strcmp(node_anim->mNodeName.data, nodeName) == 0)
         {
             // The order in which the nodes are traversed is stored in this array.
             // Next time the nodes are traversed, this functions does not need to
@@ -636,7 +636,7 @@ const aiNodeAnim* FindNodeAnim(aiAnimation* animation,
             // every traversed node can be used for comparison against the next
             // value of the animNodeMarkers array.
             TAppendElement<>(animNodeMarkers, { nodeCounter, i });
-            return nodeAnim;
+            return node_anim;
         }
     }
 
@@ -666,20 +666,20 @@ Textures LoadMeshTextures(aiMesh* mesh, const aiScene* scene, std::string path)
     {
         aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
 
-        Textures diffuseMaps = LoadMeshMaterialTextures(material, aiTextureType_DIFFUSE, "diffuseSamp", directory);
-        textures.id.insert(textures.id.end(), diffuseMaps.id.begin(), diffuseMaps.id.end());
-        textures.path.insert(textures.path.end(), diffuseMaps.path.begin(), diffuseMaps.path.end());
-        textures.types.insert(textures.types.end(), diffuseMaps.types.begin(), diffuseMaps.types.end());
+        Textures diffuse_maps = LoadMeshMaterialTextures(material, aiTextureType_DIFFUSE, "diffuseSamp", directory);
+        textures.id.insert(textures.id.end(), diffuse_maps.id.begin(), diffuse_maps.id.end());
+        textures.path.insert(textures.path.end(), diffuse_maps.path.begin(), diffuse_maps.path.end());
+        textures.types.insert(textures.types.end(), diffuse_maps.types.begin(), diffuse_maps.types.end());
 
-        Textures specularMaps = LoadMeshMaterialTextures(material, aiTextureType_SPECULAR, "specularSamp", directory);
-        textures.id.insert(textures.id.end(), specularMaps.id.begin(), specularMaps.id.end());
-        textures.path.insert(textures.path.end(), specularMaps.path.begin(), specularMaps.path.end());
-        textures.types.insert(textures.types.end(), specularMaps.types.begin(), specularMaps.types.end());
+        Textures spec_maps = LoadMeshMaterialTextures(material, aiTextureType_SPECULAR, "specularSamp", directory);
+        textures.id.insert(textures.id.end(), spec_maps.id.begin(), spec_maps.id.end());
+        textures.path.insert(textures.path.end(), spec_maps.path.begin(), spec_maps.path.end());
+        textures.types.insert(textures.types.end(), spec_maps.types.begin(), spec_maps.types.end());
 
-        Textures normalMaps = LoadMeshMaterialTextures(material, aiTextureType_NORMALS, "normalSamp", directory);
-        textures.id.insert(textures.id.end(), normalMaps.id.begin(), normalMaps.id.end());
-        textures.path.insert(textures.path.end(), normalMaps.path.begin(), normalMaps.path.end());
-        textures.types.insert(textures.types.end(), normalMaps.types.begin(), normalMaps.types.end());
+        Textures normal_maps = LoadMeshMaterialTextures(material, aiTextureType_NORMALS, "normalSamp", directory);
+        textures.id.insert(textures.id.end(), normal_maps.id.begin(), normal_maps.id.end());
+        textures.path.insert(textures.path.end(), normal_maps.path.begin(), normal_maps.path.end());
+        textures.types.insert(textures.types.end(), normal_maps.types.begin(), normal_maps.types.end());
     }
 
     return textures;

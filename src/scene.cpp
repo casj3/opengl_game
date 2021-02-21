@@ -10,44 +10,44 @@
 #include "enums.h"
 
 // Global variables which are declared as extern in different header files
-Input currentUpdate;
-Input lastUpdate;
-MouseWheel mouseWheel;
+Input current_update;
+Input last_update;
+Mouse_Wheel mouse_wheel;
 Assimp::Importer importer;
 
 // TODO: Can't load scenes like this.
-void InitializeScene1(ProgramSuper* program, struct Skeletons* skeletons, UserSuper* user) {
+void InitializeScene1(Program_Super* program, struct Skeletons* skeletons, User_Super* user) {
     std::string avatarPath = "./assets/models/Duck_Running.fbx";
     const aiScene* scene = ImportScene(&importer, avatarPath);
 
     // All the vertices and indices to create a VAO
-    ARRAY_HANDLE(SkeletalVertex) skeletalVertices;
-    Skeleton skeleton = LoadSkeleton(scene, &skeletalVertices);
+    ARRAY_HANDLE(Skeletal_Vertex) skeletal_vertices;
+    Skeleton skeleton = LoadSkeleton(scene, &skeletal_vertices);
     std::vector<uint32_t> indices = LoadIndices(scene->mMeshes[0]);
 
     // TODO: Revise what to do with the VBO and EBO.
     uint32_t VAO, VBO, EBO;
-    SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletalVertices, indices);
-    *skeletons->skeletons_array[SkeletonTypes::avatar] = skeleton;
-    *skeletons->vao_array[SkeletonTypes::avatar] = VAO;
-    *skeletons->element_buffer_sizes[SkeletonTypes::avatar] = indices.size();
+    SetupSkeletalVAO(&VAO, &VBO, &EBO, skeletal_vertices, indices);
+    *skeletons->skeletons_array[Skeleton_Types::AVATAR] = skeleton;
+    *skeletons->vao_array[Skeleton_Types::AVATAR] = VAO;
+    *skeletons->element_buffer_sizes[Skeleton_Types::AVATAR] = indices.size();
 
     // Create the shaders
-    CreateSkinningProgram(&program->program_type.defaultProgram, &program->uniforms_type.skinningUniforms);
+    CreateSkinningProgram(&program->program_type.default_program, &program->uniforms_type.skinning_uniforms);
 
-    Bind(program->program_type.defaultProgram.program);
+    Bind(program->program_type.default_program.program);
 
     // Lastly, determine the position and rotation of the avatar
 
     SubInitializeUser(user);
 }
 
-void SubInitializeUser(UserSuper* user) {
+void SubInitializeUser(User_Super* user) {
     user->user_transform.rot = glm::vec3(degreesToRadians(-90), 0, 0);
     user->user_transform.scale = glm::vec3(1, 1, 1);
     user->user_transform.pos.z = 50;
-    user->user_transform.pos.x = -WIDTH / 2;
-    user->user_transform.pos.y = HEIGHT / 2;
+    user->user_transform.pos.x = -WIN_WIDTH / 2;
+    user->user_transform.pos.y = WIN_HEIGHT / 2;
 
     // The two key frames for avatar hold and animation end.
     user->animation_keys.state_1 = 3.6f;
@@ -57,12 +57,12 @@ void SubInitializeUser(UserSuper* user) {
     user->stretch_booleans = { false, false };
 }
 
-void UpdateUser(UserSuper* user, View* view, float deltaTime) {
+void UpdateUser(User_Super* user, View* view, float deltaTime) {
     SetPlayerInputVariables(&user->stretch_booleans, &user->rotation_incrementers);
 
-    if (mouseWheel.input_received)
+    if (mouse_wheel.input_received)
     {
-        CameraSlide(&mouseWheel, view, &user->slide_props, deltaTime);
+        CameraSlide(&mouse_wheel, view, &user->slide_props, deltaTime);
     }
 
     if (user->animation_timer == 0)
@@ -78,57 +78,57 @@ void UpdateUser(UserSuper* user, View* view, float deltaTime) {
     // Commenting this for the sake of the ortographic perspective
     SetCameraPos(&view->pos, user->user_transform.pos);
 
-    mouseWheel.input_received = false;
+    mouse_wheel.input_received = false;
 }
 
-void SetPlayerInputVariables(StretchBooleans* stretch, RotationIncrementers* rotInc) {
+void SetPlayerInputVariables(Stretch_Booleans* stretch, Rotation_Incrementers* rotInc) {
     // Start with rotation incrementers
-    if (currentUpdate.D)
+    if (current_update.d)
     {
         rotInc->increment_left = 12;
         rotInc->increment_right = 0;
     }
-    else if (!currentUpdate.D && lastUpdate.D)
+    else if (!current_update.d && last_update.d)
     {
         rotInc->increment_left = 0;
         rotInc->increment_right = 0;
     }
 
-    if (currentUpdate.F)
+    if (current_update.f)
     {
         rotInc->increment_left = 0;
         rotInc->increment_right = -12;
     }
-    else if (!currentUpdate.F && lastUpdate.F)
+    else if (!current_update.f && last_update.f)
     {
         rotInc->increment_left = 0;
         rotInc->increment_right = 0;
     }
 
     // Then the stretch booleans
-    if (currentUpdate.LEFT_MOUSEBUTTON)
+    if (current_update.left_mouse_btn)
     {
         stretch->stretch_out = true;
     }
-    else if (!currentUpdate.LEFT_MOUSEBUTTON && lastUpdate.LEFT_MOUSEBUTTON)
+    else if (!current_update.left_mouse_btn && last_update.left_mouse_btn)
     {
         stretch->pull_in = true;
     }
 }
 
-void SetUserGraphicsData(ProgramSuper graphicsData, Camera camera, Transform userTransform, Skeleton skeleton) {
-    UpdateSkinningUniforms(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinningUniforms);
+void SetUserGraphicsData(Program_Super graphicsData, Camera camera, Transform userTransform, Skeleton skeleton) {
+    UpdateSkinningUniforms(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinning_uniforms);
 
     // For now we will use an arbitrary value for the light
-    UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
+    UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.default_program.program);
 }
 
-void SetUserGraphicsDataOrtho(ProgramSuper graphicsData,
-                              OrthoCamera camera,
+void SetUserGraphicsDataOrtho(Program_Super graphicsData,
+                              Ortho_Camera camera,
                               Transform userTransform,
                               Skeleton skeleton) {
-    UpdateSkinningUniformsOrtho(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinningUniforms);
+    UpdateSkinningUniformsOrtho(TransformMatrix(userTransform), camera, skeleton, graphicsData.uniforms_type.skinning_uniforms);
 
     // Arbitrary value for the light
-    UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.defaultProgram.program);
+    UpdateCameraLightBuffer(glm::vec3(0, 0, -8), camera.view.pos, graphicsData.program_type.default_program.program);
 }
